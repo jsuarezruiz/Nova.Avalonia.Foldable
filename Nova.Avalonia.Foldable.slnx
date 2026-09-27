@@ -1,0 +1,26 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Nova.Avalonia.Foldable/Nova.Avalonia.Foldable.csproj" />
+    <Project Path="src/Nova.Avalonia.Foldable.Bindings.iOS/Nova.Avalonia.Foldable.Bindings.iOS.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/Nova.Avalonia.Foldable.Sample/Nova.Avalonia.Foldable.Sample/Nova.Avalonia.Foldable.Sample.csproj" />
+    <Project Path="samples/Nova.Avalonia.Foldable.Sample/Nova.Avalonia.Foldable.Sample.Android/Nova.Avalonia.Foldable.Sample.Android.csproj">
+      <Deploy />
+    </Project>
+    <Project Path="samples/Nova.Avalonia.Foldable.Sample/Nova.Avalonia.Foldable.Sample.iOS/Nova.Avalonia.Foldable.Sample.iOS.csproj">
+      <Deploy />
+    </Project>
+    <Project Path="samples/Nova.Avalonia.Foldable.Showcase/Nova.Avalonia.Foldable.Showcase/Nova.Avalonia.Foldable.Showcase.csproj" />
+    <Project Path="samples/Nova.Avalonia.Foldable.Showcase/Nova.Avalonia.Foldable.Showcase.Android/Nova.Avalonia.Foldable.Showcase.Android.csproj">
+      <Deploy />
+    </Project>
+    <Project Path="samples/Nova.Avalonia.Foldable.Showcase/Nova.Avalonia.Foldable.Showcase.Desktop/Nova.Avalonia.Foldable.Showcase.Desktop.csproj" />
+    <Project Path="samples/Nova.Avalonia.Foldable.Showcase/Nova.Avalonia.Foldable.Showcase.iOS/Nova.Avalonia.Foldable.Showcase.iOS.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Nova.Avalonia.Foldable.Tests/Nova.Avalonia.Foldable.Tests.csproj" />
+  </Folder>
+</Solution>

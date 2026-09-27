@@ -1,0 +1,24 @@
+<Project>
+  <!--
+    These classes only exist from iOS 27.1 and are resolved at runtime. Dropping their link-time
+    references (-u _OBJC_CLASS_$_...) keeps apps buildable against older SDKs.
+  -->
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+    <_NovaFoldableWeakClass Include="_OBJC_CLASS_$_UIHinge" />
+    <_NovaFoldableWeakClass Include="_OBJC_CLASS_$_UIHingeInteraction" />
+    <_NovaFoldableWeakClass Include="_OBJC_CLASS_$_UIHingeInteractionUpdate" />
+    <_NovaFoldableWeakClass Include="_OBJC_CLASS_$_UIViewReservedRegion" />
+    <_NovaFoldableWeakClass Include="_OBJC_CLASS_$_UIViewReservedRegionIdentifier" />
+    <_NovaFoldableWeakClass Include="_OBJC_CLASS_$_UIViewReservedRegionKind" />
+
+    <ReferenceNativeSymbol Include="@(_NovaFoldableWeakClass)" SymbolType="ObjectiveCClass" SymbolMode="Ignore" />
+  </ItemGroup>
+
+  <Target Name="_NovaFoldableDropHingeClassReferences"
+          AfterTargets="_LoadLinkerOutput"
+          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+    <ItemGroup>
+      <_ProcessedReferenceNativeSymbol Remove="@(_NovaFoldableWeakClass)" />
+    </ItemGroup>
+  </Target>
+</Project>

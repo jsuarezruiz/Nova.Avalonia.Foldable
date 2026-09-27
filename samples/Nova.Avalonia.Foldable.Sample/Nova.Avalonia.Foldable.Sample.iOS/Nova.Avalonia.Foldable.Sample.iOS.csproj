@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-ios</TargetFramework>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <ApplicationId>com.nova.avalonia.foldable.sample</ApplicationId>
+    <ApplicationTitle>Foldable Sample</ApplicationTitle>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <!-- .NET for iOS 26.2 asks for Xcode 26.2; the iPhone Duo APIs need Xcode 27.1. -->
+    <ValidateXcodeVersion>false</ValidateXcodeVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <BundleResource Include="Resources/LaunchMark.png" Link="LaunchMark.png" />
+    <InterfaceDefinition Include="Resources/LaunchScreen.xib" Link="LaunchScreen.xib" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.iOS" />
+    <PackageReference Include="SkiaSharp.NativeAssets.iOS" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Nova.Avalonia.Foldable.Sample\Nova.Avalonia.Foldable.Sample.csproj" />
+    <ProjectReference Include="..\..\..\src\Nova.Avalonia.Foldable\Nova.Avalonia.Foldable.csproj" />
+  </ItemGroup>
+</Project>

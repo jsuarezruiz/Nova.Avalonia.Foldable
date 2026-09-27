@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- iOS 27.1 hinge APIs from https://github.com/dotnet/macios/pull/26705, until .NET ships them. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-ios</TargetFramework>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <IsBindingProject>true</IsBindingProject>
+    <RootNamespace>Nova.Avalonia.Foldable.Bindings.iOS</RootNamespace>
+    <NoBindingEmbedding>true</NoBindingEmbedding>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="buildTransitive/Nova.Avalonia.Foldable.Bindings.iOS.targets" Pack="true" PackagePath="buildTransitive" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ObjcBindingApiDefinition Include="ApiDefinition.cs" />
+    <ObjcBindingCoreSource Include="UIHingeStatus.cs" />
+    <ObjcBindingCoreSource Include="UIViewReservedRegionQueryOptions.cs" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net10.0;net10.0-ios;net10.0-android</TargetFrameworks>
+    <RootNamespace>Nova.Avalonia.Foldable</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">23</SupportedOSPlatformVersion>
+    <Description>Foldable support for Avalonia on iOS (iPhone Duo) and Android: posture, hinge angle, fold bounds and a fold-aware TwoPaneView.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'ios'">
+    <ProjectReference Include="..\Nova.Avalonia.Foldable.Bindings.iOS\Nova.Avalonia.Foldable.Bindings.iOS.csproj" />
+  </ItemGroup>
+
+  <!-- Jetpack WindowManager: FoldingFeature and the Java-friendly callback adapter. -->
+  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android'">
+    <PackageReference Include="Xamarin.AndroidX.Window" />
+    <PackageReference Include="Xamarin.AndroidX.Window.WindowJava" />
+    <!-- Aligns with the AndroidX Core that Window pulls in; an older Core.Ktx duplicates its classes. -->
+    <PackageReference Include="Xamarin.AndroidX.Core.Core.Ktx" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetPlatformIdentifier)' != 'ios'">
+    <Compile Remove="Platforms\iOS\**" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetPlatformIdentifier)' != 'android'">
+    <Compile Remove="Platforms\Android\**" />
+  </ItemGroup>
+</Project>

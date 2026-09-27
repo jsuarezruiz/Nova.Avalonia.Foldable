@@ -1,0 +1,182 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Nova.Avalonia.Foldable.Showcase.Desktop.SimulatorWindow"
+        Title="Guide To the Stars · Foldable simulator"
+        Width="1320"
+        Height="900"
+        Background="#FF0B0B10"
+        RequestedThemeVariant="Dark">
+
+  <Window.Styles>
+    <Style Selector="TextBlock.eyebrow">
+      <Setter Property="FontFamily" Value="{StaticResource ContentFont}" />
+      <Setter Property="FontSize" Value="10" />
+      <Setter Property="LetterSpacing" Value="1.5" />
+      <Setter Property="Foreground" Value="#FF8A8A99" />
+    </Style>
+
+    <Style Selector="RadioButton.preset">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Name="Card"
+                  Background="#FF15151D"
+                  BorderBrush="#FF26262F"
+                  BorderThickness="1"
+                  CornerRadius="10"
+                  Padding="12,9">
+            <ContentPresenter Content="{TemplateBinding Content}" />
+          </Border>
+        </ControlTemplate>
+      </Setter>
+      <Setter Property="Margin" Value="4" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="VerticalAlignment" Value="Stretch" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="RadioButton.preset:pointerover /template/ Border#Card">
+      <Setter Property="BorderBrush" Value="#FF44444F" />
+    </Style>
+    <Style Selector="RadioButton.preset:checked /template/ Border#Card">
+      <Setter Property="Background" Value="#FF1F1B26" />
+      <Setter Property="BorderBrush" Value="#FFD4A1FF" />
+    </Style>
+
+    <Style Selector="TextBlock.presetTitle">
+      <Setter Property="FontFamily" Value="{StaticResource ContentFont}" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Foreground" Value="White" />
+    </Style>
+    <Style Selector="TextBlock.presetHint">
+      <Setter Property="FontFamily" Value="{StaticResource ContentFont}" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Foreground" Value="#FF8A8A99" />
+      <Setter Property="Margin" Value="0,2,0,0" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style Selector="TextBlock.readout">
+      <Setter Property="FontFamily" Value="Menlo, Consolas, monospace" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Foreground" Value="#FFC9C9D4" />
+      <Setter Property="Margin" Value="0,2" />
+    </Style>
+
+    <Style Selector="Button.play">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="Padding" Value="0,10" />
+      <Setter Property="CornerRadius" Value="20" />
+      <Setter Property="Background" Value="#FFD4A1FF" />
+      <Setter Property="Foreground" Value="#FF0B0B10" />
+      <Setter Property="FontFamily" Value="{StaticResource ContentFont}" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.play:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#FFE2BFFF" />
+      <Setter Property="Foreground" Value="#FF0B0B10" />
+    </Style>
+    <!-- Disabled for a device without a hinge; dimmed rather than recolored. -->
+    <Style Selector="Button.play:disabled">
+      <Setter Property="Opacity" Value="0.35" />
+    </Style>
+    <Style Selector="Button.play:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#FFD4A1FF" />
+      <Setter Property="Foreground" Value="#FF0B0B10" />
+    </Style>
+  </Window.Styles>
+
+  <Grid ColumnDefinitions="*,320">
+
+    <!-- The device, scaled down when the window is too small. Its size follows the preset; the dashed line marks the fold. -->
+    <Viewbox StretchDirection="DownOnly">
+      <!-- The margin keeps the shadow inside the scaled area. -->
+      <Border Margin="80,50,80,110"
+              Background="#FF2A2A33"
+              CornerRadius="40"
+              Padding="8"
+              BoxShadow="0 30 80 0 #A0000000">
+        <!-- The screen's corners follow the bezel's inner edge (40 - 8). -->
+        <Border Background="Black" CornerRadius="32" ClipToBounds="True">
+          <Panel>
+            <ContentPresenter Name="Screen" />
+            <!-- Darkens toward the fold as the hinge closes, so the angle shows on the device. -->
+            <Rectangle Name="HingeShade" IsHitTestVisible="False" />
+            <Canvas IsHitTestVisible="False">
+              <!-- The band TwoPaneView keeps both panes out of. -->
+              <Rectangle Name="FoldBand" Fill="#1AD4A1FF" />
+              <Line Name="FoldLine"
+                    Stroke="#50D4A1FF"
+                    StrokeThickness="1"
+                    StrokeDashArray="4,4" />
+            </Canvas>
+          </Panel>
+        </Border>
+      </Border>
+    </Viewbox>
+
+    <!-- The simulator's controls. -->
+    <Border Grid.Column="1" Background="#FF101017" BorderBrush="#FF1E1E27" BorderThickness="1,0,0,0">
+      <ScrollViewer>
+        <StackPanel Margin="24,28,24,24">
+          <TextBlock Classes="eyebrow" Text="NOVA.AVALONIA.FOLDABLE" />
+          <TextBlock Text="Foldable simulator"
+                     Margin="0,4,0,4"
+                     FontFamily="{StaticResource HeaderFont}"
+                     FontSize="24"
+                     Foreground="White" />
+          <TextBlock Text="Feeds a simulated fold to the app through the same API the iOS and Android providers use."
+                     TextWrapping="Wrap"
+                     FontFamily="{StaticResource ContentFont}"
+                     FontSize="11"
+                     LineHeight="17"
+                     Foreground="#FF8A8A99" />
+
+          <TextBlock Classes="eyebrow" Text="POSTURE" Margin="0,24,0,6" />
+          <UniformGrid Name="PresetList" Columns="2" Margin="-4,0" />
+
+          <TextBlock Classes="eyebrow" Text="HINGE ANGLE" Margin="0,18,0,4" />
+          <Grid ColumnDefinitions="*,Auto">
+            <Slider Name="AngleSlider" AutomationProperties.Name="Hinge angle" Minimum="0" Maximum="180" Value="110" />
+            <TextBlock Name="AngleText"
+                       Grid.Column="1"
+                       Width="42"
+                       VerticalAlignment="Center"
+                       TextAlignment="Right"
+                       FontFamily="{StaticResource ContentFont}"
+                       FontSize="13"
+                       Foreground="White" />
+          </Grid>
+          <TextBlock Text="0° closes the device and 180° lays it flat, as on the real hinge. Moving it also warps the stars."
+                     TextWrapping="Wrap"
+                     FontFamily="{StaticResource ContentFont}"
+                     FontSize="11"
+                     Foreground="#FF8A8A99" />
+
+          <Button Name="PlayButton" Classes="play" Content="Open the device" Margin="0,20,0,0" Click="OnPlayClicked" />
+
+          <TextBlock Classes="eyebrow" Text="WHAT THE APP SEES" Margin="0,28,0,8" />
+          <Border Background="#FF15151D" CornerRadius="10" Padding="14,10">
+            <StackPanel Name="Readout" />
+          </Border>
+
+          <TextBlock Text="Keys: 1 to 6 pick a posture, left and right arrows move the hinge (hold Shift for 1°)."
+                     Margin="0,16,0,0"
+                     TextWrapping="Wrap"
+                     FontFamily="{StaticResource ContentFont}"
+                     FontSize="10"
+                     LineHeight="15"
+                     Foreground="#FF8A8A99" />
+
+          <TextBlock Text="Screen sizes and the 40pt fold are the iPhone Duo's, as reported on iOS 27.1. Safe-area insets aren't simulated."
+                     Margin="0,16,0,0"
+                     TextWrapping="Wrap"
+                     FontFamily="{StaticResource ContentFont}"
+                     FontSize="10"
+                     LineHeight="15"
+                     Foreground="#FF5E5E6B" />
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+  </Grid>
+
+</Window>

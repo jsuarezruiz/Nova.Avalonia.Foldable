@@ -1,0 +1,5 @@
+<Project>
+  <!-- In-repo apps reference the bindings as a project, so the package's buildTransitive targets aren't applied automatically. -->
+  <Import Project="$(MSBuildThisFileDirectory)src/Nova.Avalonia.Foldable.Bindings.iOS/buildTransitive/Nova.Avalonia.Foldable.Bindings.iOS.targets"
+          Condition="'$(OutputType)' == 'Exe' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'" />
+</Project>

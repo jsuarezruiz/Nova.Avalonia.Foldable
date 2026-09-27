@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Authors>Javier Suárez</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>avalonia;foldable;iphone-duo;pixel-fold;twopaneview;hinge;dual-screen</PackageTags>
+  </PropertyGroup>
+</Project>

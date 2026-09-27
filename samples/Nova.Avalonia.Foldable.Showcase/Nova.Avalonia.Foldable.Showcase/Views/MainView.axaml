@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:fold="using:Nova.Avalonia.Foldable"
+             xmlns:controls="using:Nova.Avalonia.Foldable.Showcase.Controls"
+             xmlns:views="using:Nova.Avalonia.Foldable.Showcase.Views"
+             x:Class="Nova.Avalonia.Foldable.Showcase.Views.MainView">
+
+  <Panel Background="{StaticResource SkyBrush}">
+
+    <!-- One sky behind both panes: the stars carry on across the fold. -->
+    <controls:StarField Name="Stars" StarCount="400" />
+
+    <!-- Tall only on a horizontal fold (tabletop), with the chart above and the list below. -->
+    <fold:TwoPaneView Name="Panes"
+                     MinWideModeWidth="700"
+                     MinTallModeHeight="100000"
+                     TallModeConfiguration="BottomTop">
+      <fold:TwoPaneView.Pane1>
+        <!-- Scaled down a touch when a pane is narrower than the phone the guide was designed for. -->
+        <LayoutTransformControl Name="ListHost">
+          <views:ListPage Name="List" />
+        </LayoutTransformControl>
+      </fold:TwoPaneView.Pane1>
+      <fold:TwoPaneView.Pane2>
+        <!-- Pages have no background of their own, so they cross-fade over the stars. -->
+        <TransitioningContentControl Name="DetailHost">
+          <TransitioningContentControl.PageTransition>
+            <CrossFade Duration="0:0:1" />
+          </TransitioningContentControl.PageTransition>
+        </TransitioningContentControl>
+      </fold:TwoPaneView.Pane2>
+    </fold:TwoPaneView>
+
+    <!-- The card in flight between the two pages rides above both, and across the fold. -->
+    <Canvas Name="FlightLayer" IsHitTestVisible="False" />
+
+    <!-- A dark pill, so list entries fading out underneath don't show through the caption. -->
+    <Border Margin="12,0,0,10"
+            Padding="10,5"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Bottom"
+            IsHitTestVisible="False"
+            CornerRadius="12"
+            Background="#D9000000"
+            BorderBrush="#26FFFFFF"
+            BorderThickness="1">
+      <TextBlock Name="PostureCaption"
+                 FontFamily="{StaticResource ContentFont}"
+                 FontSize="10"
+                 LetterSpacing="1.5"
+                 Foreground="{StaticResource MutedInkBrush}" />
+    </Border>
+  </Panel>
+
+</UserControl>
