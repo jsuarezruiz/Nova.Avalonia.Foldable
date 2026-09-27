@@ -2,7 +2,7 @@
 
 ## dotnet/macios
 
-`src/Nova.Avalonia.Foldable.Bindings.iOS` mirrors the iPhone Duo API definitions added in [dotnet/macios#26705](https://github.com/dotnet/macios/pull/26705) ("[xcode27.1] Update to Xcode 27.1 Beta 1"). dotnet/macios is released under the MIT license, Copyright (c) .NET Foundation and Contributors.
+`src/Nova.Avalonia.Foldable.Bindings.iOS` mirrors the iPhone Duo API definitions added in [dotnet/macios#26705](https://github.com/dotnet/macios/pull/26705) ("[xcode27.1] Update to Xcode 27.1 Beta 1 on release/10.0.1xx"). dotnet/macios is released under the MIT license, Copyright (c) .NET Foundation and Contributors.
 
 ## Avalonia Vignettes
 
