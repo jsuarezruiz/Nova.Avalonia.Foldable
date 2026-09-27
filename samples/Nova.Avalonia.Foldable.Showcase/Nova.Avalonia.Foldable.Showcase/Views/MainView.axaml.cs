@@ -50,6 +50,7 @@ public partial class MainView : UserControl
     private Control? _flightSource;
     private Control? _flightTarget;
     private MaterialRectArcTween? _cardRectTween;
+    private int _flightId;
 
     public MainView()
     {
@@ -206,6 +207,7 @@ public partial class MainView : UserControl
         // A cross-fade started while the pane is out of the tree never ticks; ShowPane fades it instead.
         DetailHost.PageTransition = TopLevel.GetTopLevel(DetailHost) is null ? null : _detailTransition;
 
+        _detail?.Retire();
         _detail = detail;
         DetailHost.Content = detail;
         return detail;
@@ -236,6 +238,10 @@ public partial class MainView : UserControl
 
         if (IsSinglePane)
         {
+            // An interrupted fade would leave the other pane half transparent, which shows once both panes are visible.
+            if (_fadingPane is { } previous)
+                previous.Opacity = 1d;
+
             _fadingPane = priority == TwoPaneViewPriority.Pane1 ? List : DetailHost;
             _paneFade.SetValue(0d);
             _paneFade.Forward();
@@ -284,11 +290,23 @@ public partial class MainView : UserControl
             return;
         }
 
+        // A flight still in the air would otherwise leave its cards hidden for good.
+        _cardFlight.Stop();
+        EndCardFlight();
+
         from.Opacity = 0d;
         to.Opacity = 0d;
 
+        // Only the latest tap flies; an earlier one still queued is dropped.
+        var id = ++_flightId;
         Dispatcher.UIThread.Post(
-            () => StartCardFlight(origin, from, to, constellation, isRedMode),
+            () =>
+            {
+                if (id == _flightId)
+                {
+                    StartCardFlight(origin, from, to, constellation, isRedMode);
+                }
+            },
             DispatcherPriority.Loaded);
     }
 
@@ -348,7 +366,16 @@ public partial class MainView : UserControl
             return;
         }
 
-        FlightLayer.Children.Remove(card);
+        EndCardFlight();
+    }
+
+    // Lands the flight: the copy leaves the overlay and both real cards show again.
+    private void EndCardFlight()
+    {
+        if (_flyingCard is { } card)
+        {
+            FlightLayer.Children.Remove(card);
+        }
 
         if (_flightTarget is { } target)
         {

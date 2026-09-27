@@ -17,6 +17,7 @@ public sealed class FrameTicker
     private TimeSpan _startedAt;
     private bool _hasStartTime;
     private bool _framePending;
+    private bool _waitingForAttach;
 
     /// <summary>
     /// Initializes a new ticker for <paramref name="owner"/>, invoking <paramref name="onTick"/>
@@ -68,9 +69,24 @@ public sealed class FrameTicker
             _framePending = true;
             topLevel.RequestAnimationFrame(OnFrame);
         }
-        else
+        else if (!_waitingForAttach)
         {
-            IsRunning = false;
+            // Out of the tree (a hidden pane): no frames to ask for, so carry on once it's back.
+            _waitingForAttach = true;
+            _owner.AttachedToVisualTree += OnReattached;
+        }
+    }
+
+    private void OnReattached(object? sender, VisualTreeAttachmentEventArgs e)
+    {
+        _owner.AttachedToVisualTree -= OnReattached;
+        _waitingForAttach = false;
+
+        if (IsRunning)
+        {
+            // Measure from the resume, so the time spent detached doesn't jump the animation ahead.
+            _hasStartTime = false;
+            RequestFrame();
         }
     }
 

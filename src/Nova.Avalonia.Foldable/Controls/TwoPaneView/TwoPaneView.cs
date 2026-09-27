@@ -206,13 +206,14 @@ public class TwoPaneView : Control
 
         if (change.Property == Pane1Property || change.Property == Pane2Property)
         {
-            if (change.OldValue is Control oldPane)
+            // Swapping the panes passes each control through both properties; keep one still in use.
+            if (change.OldValue is Control oldPane && oldPane != Pane1 && oldPane != Pane2)
             {
                 LogicalChildren.Remove(oldPane);
                 VisualChildren.Remove(oldPane);
             }
 
-            if (change.NewValue is Control newPane)
+            if (change.NewValue is Control newPane && !LogicalChildren.Contains(newPane))
                 LogicalChildren.Add(newPane);
 
             InvalidateMeasure();
@@ -250,9 +251,10 @@ public class TwoPaneView : Control
     /// <inheritdoc/>
     protected override Size MeasureOverride(Size availableSize)
     {
+        // Unconstrained, use the last arranged size, as WinUI does, so measure and arrange agree on the mode.
         var layoutSize = new Size(
-            double.IsInfinity(availableSize.Width) ? 0 : availableSize.Width,
-            double.IsInfinity(availableSize.Height) ? 0 : availableSize.Height);
+            double.IsInfinity(availableSize.Width) ? Bounds.Width : availableSize.Width,
+            double.IsInfinity(availableSize.Height) ? Bounds.Height : availableSize.Height);
         var layout = ComputeLayout(layoutSize);
         Mode = layout.Mode;
         UpdateVisualChildren(layout);
@@ -261,12 +263,12 @@ public class TwoPaneView : Control
         if (layout.Pane1 is { } r1 && Pane1 is { } p1)
         {
             p1.Measure(MeasureConstraint(availableSize, r1, layout.Mode));
-            desired = Union(desired, p1.DesiredSize);
+            desired = Combine(desired, p1.DesiredSize, layout.Mode);
         }
         if (layout.Pane2 is { } r2 && Pane2 is { } p2)
         {
             p2.Measure(MeasureConstraint(availableSize, r2, layout.Mode));
-            desired = Union(desired, p2.DesiredSize);
+            desired = Combine(desired, p2.DesiredSize, layout.Mode);
         }
 
         return new Size(
@@ -289,14 +291,21 @@ public class TwoPaneView : Control
         return finalSize;
     }
 
+    // An unconstrained direction stays unconstrained, so the panes report their natural size there.
     private static Size MeasureConstraint(Size available, Rect paneRect, TwoPaneViewMode mode) => mode switch
     {
-        TwoPaneViewMode.Wide => new Size(paneRect.Width, available.Height),
-        TwoPaneViewMode.Tall => new Size(available.Width, paneRect.Height),
+        TwoPaneViewMode.Wide => new Size(double.IsInfinity(available.Width) ? available.Width : paneRect.Width, available.Height),
+        TwoPaneViewMode.Tall => new Size(available.Width, double.IsInfinity(available.Height) ? available.Height : paneRect.Height),
         _ => available,
     };
 
-    private static Size Union(Size a, Size b) => new(Math.Max(a.Width, b.Width), Math.Max(a.Height, b.Height));
+    // Side by side the widths add up, stacked the heights do.
+    private static Size Combine(Size a, Size b, TwoPaneViewMode mode) => mode switch
+    {
+        TwoPaneViewMode.Wide => new Size(a.Width + b.Width, Math.Max(a.Height, b.Height)),
+        TwoPaneViewMode.Tall => new Size(Math.Max(a.Width, b.Width), a.Height + b.Height),
+        _ => new Size(Math.Max(a.Width, b.Width), Math.Max(a.Height, b.Height)),
+    };
 
     private void UpdateVisualChildren(PaneLayout layout)
     {

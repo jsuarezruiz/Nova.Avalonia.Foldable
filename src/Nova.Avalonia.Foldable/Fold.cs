@@ -175,6 +175,7 @@ public static class Fold
             Provider = provider;
             Provider.Changed += OnChanged;
             _topLevel.PropertyChanged += OnTopLevelPropertyChanged;
+            _topLevel.Closed += OnTopLevelClosed;
             Apply(Provider.Current);
         }
 
@@ -184,7 +185,15 @@ public static class Fold
         {
             Provider.Changed -= OnChanged;
             _topLevel.PropertyChanged -= OnTopLevelPropertyChanged;
+            _topLevel.Closed -= OnTopLevelClosed;
             Provider.Dispose();
+        }
+
+        // A closed window, or an Android activity's destroyed view, no longer needs the platform listeners.
+        private void OnTopLevelClosed(object? sender, EventArgs e)
+        {
+            s_registrations.Remove(_topLevel);
+            Dispose();
         }
 
         private void OnChanged(object? sender, FoldState state) => Apply(state);

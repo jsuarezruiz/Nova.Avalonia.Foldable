@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using Xunit;
@@ -184,5 +185,46 @@ public class TwoPaneViewTests
         Assert.Equal(TwoPaneViewMode.Wide, view.Mode);
         Assert.Equal(new Rect(0, 0, 500, 600), view.Pane1!.Bounds);
         Assert.Equal(new Rect(540, 0, 260, 600), view.Pane2!.Bounds);
+    }
+
+    [AvaloniaFact]
+    public void Swapping_Panes_Keeps_Both_As_Children()
+    {
+        var (_, view, _) = Create(1000, 500);
+        var first = view.Pane1!;
+        var second = view.Pane2!;
+
+        (view.Pane1, view.Pane2) = (view.Pane2, view.Pane1);
+        view.UpdateLayout();
+
+        Assert.Same(view, first.Parent);
+        Assert.Same(view, second.Parent);
+        Assert.Same(view, first.GetVisualParent());
+        Assert.Same(view, second.GetVisualParent());
+        Assert.Equal(new Rect(0, 0, 500, 500), second.Bounds);
+    }
+
+    [AvaloniaFact]
+    public void Unconstrained_Width_Settles_On_One_Mode()
+    {
+        var view = new TwoPaneView { Pane1 = new Border { Width = 900 }, Pane2 = new Border() };
+        var window = new Window
+        {
+            Width = 1200, Height = 500,
+            Content = new StackPanel { Orientation = Orientation.Horizontal, Children = { view } },
+        };
+        Fold.SetProvider(window, new SimulatedFoldStateProvider());
+        window.Show();
+        view.UpdateLayout();
+
+        var changes = 0;
+        view.ModeChanged += (_, _) => changes++;
+        view.InvalidateMeasure();
+        view.UpdateLayout();
+        view.InvalidateMeasure();
+        view.UpdateLayout();
+
+        Assert.Equal(TwoPaneViewMode.Wide, view.Mode);
+        Assert.Equal(0, changes);
     }
 }

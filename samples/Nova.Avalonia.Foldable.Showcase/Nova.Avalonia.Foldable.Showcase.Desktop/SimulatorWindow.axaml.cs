@@ -81,16 +81,22 @@ public partial class SimulatorWindow : Window
             AutomationProperties.SetName(button, Presets[index].Title);
             button.IsCheckedChanged += (_, _) =>
             {
-                if (button.IsChecked == true)
-                    Apply(index);
+                if (button.IsChecked != true)
+                    return;
+                // Picked by hand rather than by the hinge: that takes over from "Open the device".
+                if (_hingeAngle is null)
+                    _playTimer.Stop();
+                Apply(index);
             };
             PresetList.Children.Add(button);
         }
 
         AngleSlider.ValueChanged += (_, e) =>
         {
-            if (!_updatingSlider)
-                MoveHinge(e.NewValue);
+            if (_updatingSlider)
+                return;
+            _playTimer.Stop();
+            MoveHinge(e.NewValue);
         };
 
         // Tunnel, so the shortcuts work whichever control has focus.
@@ -177,6 +183,7 @@ public partial class SimulatorWindow : Window
         if (e.Key is Key.Left or Key.Right && _preset.Foldable)
         {
             var step = e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 1 : 5;
+            _playTimer.Stop();
             MoveHinge(Math.Clamp(_preset.Angle + (e.Key == Key.Right ? step : -step), 0, 180));
             e.Handled = true;
         }

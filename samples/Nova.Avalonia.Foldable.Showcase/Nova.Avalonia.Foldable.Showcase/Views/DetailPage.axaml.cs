@@ -42,8 +42,12 @@ public partial class DetailPage : UserControl
 
     private readonly ScaleTransform _chartScale = new(0d, 0d);
 
+    // Wide enough for the chart at full pane width on a 3x display; the source art is over 2000px.
+    private const int ArtworkDecodeWidth = 1400;
+
     private Bitmap? _chartImage;
     private Bitmap? _labelImage;
+    private bool _retired;
     private readonly AnimationController _reveal;
 
     public DetailPage()
@@ -138,6 +142,32 @@ public partial class DetailPage : UserControl
         _reveal.Forward();
     }
 
+    /// <summary>
+    /// Frees the artwork once the page has left the screen; a cross-fade may still be drawing it.
+    /// </summary>
+    public void Retire()
+    {
+        _retired = true;
+        if (TopLevel.GetTopLevel(this) is null)
+            ReleaseArtwork();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        if (_retired)
+            ReleaseArtwork();
+    }
+
+    private void ReleaseArtwork()
+    {
+        var chart = ChartImage;
+        var label = LabelImage;
+        ChartImage = LabelImage = null;
+        chart?.Dispose();
+        label?.Dispose();
+    }
+
     // Loads the artwork here rather than binding the file locations straight at the images: a
     // binding hands the target a Uri, which is not converted to an image at runtime,
     // and the pictures simply never appear.
@@ -149,8 +179,15 @@ public partial class DetailPage : UserControl
             return;
         }
 
-        ChartImage = new Bitmap(AssetLoader.Open(constellation.ChartUri));
-        LabelImage = new Bitmap(AssetLoader.Open(constellation.LabelUri));
+        ReleaseArtwork();
+        ChartImage = Decode(constellation.ChartUri);
+        LabelImage = Decode(constellation.LabelUri);
+    }
+
+    private static Bitmap Decode(Uri uri)
+    {
+        using var stream = AssetLoader.Open(uri);
+        return Bitmap.DecodeToWidth(stream, ArtworkDecodeWidth);
     }
 
     private void OnRevealProgressChanged(double progress)

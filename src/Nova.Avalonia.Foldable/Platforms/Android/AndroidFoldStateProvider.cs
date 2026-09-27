@@ -9,6 +9,7 @@ using AndroidX.Window.Java.Layout;
 using AndroidX.Window.Layout;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using AndroidView = Android.Views.View;
 using JavaObject = Java.Lang.Object;
 
@@ -27,6 +28,7 @@ internal sealed class AndroidFoldStateProvider : JavaObject, IConsumer, ISensorE
     private readonly WindowInfoTrackerCallbackAdapter _tracker;
     private readonly SensorManager? _sensors;
     private readonly Sensor? _hinge;
+    private readonly IActivatableLifetime? _lifetime;
     private WindowLayoutInfo? _layout;
     private double? _hingeAngle;
     private bool _seenFold;
@@ -44,8 +46,15 @@ internal sealed class AndroidFoldStateProvider : JavaObject, IConsumer, ISensorE
         {
             _sensors = activity.GetSystemService(Context.SensorService) as SensorManager;
             _hinge = _sensors?.GetDefaultSensor(SensorType.HingeAngle);
-            if (_hinge is not null)
-                _sensors!.RegisterListener(this, _hinge, SensorDelay.Ui);
+            StartSensor();
+        }
+
+        // Sensor listeners keep running in the background unless removed; pause while the app is stopped.
+        _lifetime = global::Avalonia.Application.Current?.TryGetFeature<IActivatableLifetime>();
+        if (_lifetime is not null)
+        {
+            _lifetime.Activated += OnActivated;
+            _lifetime.Deactivated += OnDeactivated;
         }
 
         Current = ReadState();
@@ -96,6 +105,24 @@ internal sealed class AndroidFoldStateProvider : JavaObject, IConsumer, ISensorE
     {
     }
 
+    private void StartSensor()
+    {
+        if (_hinge is not null)
+            _sensors?.RegisterListener(this, _hinge, SensorDelay.Ui);
+    }
+
+    private void OnActivated(object? sender, ActivatedEventArgs e)
+    {
+        if (e.Kind == ActivationKind.Background)
+            StartSensor();
+    }
+
+    private void OnDeactivated(object? sender, ActivatedEventArgs e)
+    {
+        if (e.Kind == ActivationKind.Background)
+            _sensors?.UnregisterListener(this);
+    }
+
     private FoldState ReadState()
     {
         IFoldingFeature? fold = null;
@@ -122,6 +149,8 @@ internal sealed class AndroidFoldStateProvider : JavaObject, IConsumer, ISensorE
             posture = Equals(fold.State, FoldingFeatureState.HalfOpened) ? DevicePosture.HalfOpened : DevicePosture.Flat;
         else if (_hingeAngle is { } angle)
             posture = angle < 30 ? DevicePosture.Closed : DevicePosture.Unknown;
+        else if (_layout is null)
+            posture = DevicePosture.Unknown; // WindowManager hasn't reported yet.
         else
             posture = DevicePosture.Closed; // A foldable with no fold in the window: the cover display.
 
@@ -160,6 +189,11 @@ internal sealed class AndroidFoldStateProvider : JavaObject, IConsumer, ISensorE
         {
             _tracker.RemoveWindowLayoutInfoListener(this);
             _sensors?.UnregisterListener(this);
+            if (_lifetime is not null)
+            {
+                _lifetime.Activated -= OnActivated;
+                _lifetime.Deactivated -= OnDeactivated;
+            }
         }
         base.Dispose(disposing);
     }
