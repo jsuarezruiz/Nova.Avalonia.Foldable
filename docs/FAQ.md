@@ -35,11 +35,11 @@ The bindings project is deleted and the library switches to the official `UIKit`
 
 ### Why `ValidateXcodeVersion=false`?
 
-The current .NET for iOS release asks for Xcode 26.2, while the iPhone Duo simulator needs Xcode 27. The bindings are resolved at runtime and don't depend on the Xcode version; the samples build with Xcode 27.0 and 27.1.
+The current .NET for iOS release asks for Xcode 26.2, while the iPhone Duo simulator needs Xcode 27.1. The bindings are resolved at runtime and don't depend on the Xcode version; the samples build with Xcode 27.0 and 27.1.
 
 ### I get `Undefined symbols: _OBJC_CLASS_$_UIHinge` when linking
 
-You're building against an SDK older than 27.1 without the bindings' `buildTransitive` targets. The NuGet package applies them automatically; with project references, import `Nova.Avalonia.Foldable.Bindings.iOS.targets` in your iOS head (see the README).
+You're building against an SDK older than 27.1 without the bindings' `buildTransitive` targets. A future NuGet package will apply them automatically; with project references, import `Nova.Avalonia.Foldable.Bindings.iOS.targets` in your iOS head (see the README).
 
 ### Does the app still run on iOS versions before 27.1?
 
@@ -91,7 +91,7 @@ Then drive it with `adb emu posture 1|2|3` (closed, half open, open) and `adb em
 
 ### Why not the "7.6in Foldable" emulator profile?
 
-It reports postures shifted by one (closed → half open, half open → flat, open → no fold). Its device-state ids start at 1, while the WindowManager extension's posture table expects them to start at 0, as on Pixel devices. The library faithfully reports what WindowManager sends, so the result is wrong on that profile only.
+It reports postures shifted by one (closed → half open, half open → flat, open → no fold). Its device-state ids start at 1, while the WindowManager extension's posture table expects them to start at 0, as on Pixel devices. The library reports what WindowManager sends, so the result is wrong on that profile only.
 
 ### The emulator crashes on boot
 
@@ -117,4 +117,4 @@ Anything that ticks off the top level's frames (`TopLevel.RequestAnimationFrame`
 
 ### Can I use the hinge angle for layout?
 
-Please don't. Apple's guidance is to use it for effects only, and not every Android foldable exposes it. Use `Posture`, `IsSeparating` and `FoldBounds` for layout.
+Please don't. The angle changes continuously while the device folds, and not every Android foldable exposes it. Use `Posture`, `IsSeparating` and `FoldBounds` for layout.
