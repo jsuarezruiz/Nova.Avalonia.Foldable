@@ -6,7 +6,7 @@
 
 ## Avalonia Vignettes
 
-The showcase is adapted from the "Guide To the Stars Particles" vignette of [Avalonia Vignettes](https://github.com/jsuarezruiz/avalonia_vignettes), MIT license, Copyright (c) 2026 Javier Suárez.
+The Showcase ("Guide To the Stars") is adapted from the "Guide To the Stars Particles" vignette of [Avalonia Vignettes](https://github.com/jsuarezruiz/avalonia_vignettes), MIT license, Copyright (c) 2026 Javier Suárez.
 
 ## Flutter Vignettes by gskinner
 
