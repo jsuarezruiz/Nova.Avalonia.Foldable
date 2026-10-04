@@ -10,7 +10,7 @@
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
     <!-- Keep Debug APKs self-contained, so they also run when installed with adb outside an IDE. -->
-    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+    <EmbedAssembliesIntoApk Condition="'$(Configuration)' == 'Debug'">true</EmbedAssembliesIntoApk>
   </PropertyGroup>
 
   <ItemGroup>

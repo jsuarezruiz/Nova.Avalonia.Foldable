@@ -1,4 +1,5 @@
 using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Xunit;
@@ -18,6 +19,25 @@ public class FoldTests
         window.Close();
 
         Assert.Equal(1, provider.Disposals);
+    }
+
+    [AvaloniaFact]
+    public void Asking_For_The_Provider_During_Registration_Returns_It()
+    {
+        var window = new Window();
+        IFoldStateProvider? seen = null;
+        window.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == Fold.StateProperty)
+                seen = Fold.GetProvider(window);
+        };
+        var provider = new SimulatedFoldStateProvider(
+            new FoldState(true, DevicePosture.HalfOpened, 110, new Rect(380, 0, 40, 600), true));
+
+        Fold.SetProvider(window, provider);
+
+        Assert.Same(provider, seen);
+        Assert.Same(provider, Fold.GetProvider(window));
     }
 
     private sealed class CountingProvider : IFoldStateProvider

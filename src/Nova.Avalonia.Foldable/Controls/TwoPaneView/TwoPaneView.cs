@@ -5,8 +5,7 @@ using Avalonia.Controls;
 namespace Nova.Avalonia.Foldable;
 
 /// <summary>
-/// Two panes side by side, stacked, or one at a time, split at the fold when there is one.
-/// Follows the WinUI and .NET MAUI TwoPaneView API.
+/// Two panes side by side, stacked, or one at a time, split at the fold, following the WinUI and .NET MAUI API.
 /// </summary>
 public class TwoPaneView : Control
 {
@@ -88,11 +87,11 @@ public class TwoPaneView : Control
             Pane1LengthProperty, Pane2LengthProperty, PanePriorityProperty,
             MinWideModeWidthProperty, MinTallModeHeightProperty,
             WideModeConfigurationProperty, TallModeConfigurationProperty,
-            SnapToFoldProperty, Fold.StateProperty);
+            SnapToFoldProperty);
     }
 
     /// <summary>
-    /// The first pane: left, top, or the only one by default.
+    /// Gets or sets the first pane: left, top, or the only one by default.
     /// </summary>
     public Control? Pane1
     {
@@ -101,7 +100,7 @@ public class TwoPaneView : Control
     }
 
     /// <summary>
-    /// The second pane: right or bottom.
+    /// Gets or sets the second pane: right or bottom.
     /// </summary>
     public Control? Pane2
     {
@@ -110,7 +109,7 @@ public class TwoPaneView : Control
     }
 
     /// <summary>
-    /// Pane1's share of the space when no fold decides the split.
+    /// Gets or sets Pane1's share of the space when no fold decides the split.
     /// </summary>
     public GridLength Pane1Length
     {
@@ -119,7 +118,7 @@ public class TwoPaneView : Control
     }
 
     /// <summary>
-    /// Pane2's share of the space when no fold decides the split.
+    /// Gets or sets Pane2's share of the space when no fold decides the split.
     /// </summary>
     public GridLength Pane2Length
     {
@@ -128,7 +127,7 @@ public class TwoPaneView : Control
     }
 
     /// <summary>
-    /// The pane shown in SinglePane mode.
+    /// Gets or sets the pane shown in SinglePane mode.
     /// </summary>
     public TwoPaneViewPriority PanePriority
     {
@@ -137,7 +136,7 @@ public class TwoPaneView : Control
     }
 
     /// <summary>
-    /// Width above which the panes go side by side.
+    /// Gets or sets the width above which the panes go side by side.
     /// </summary>
     public double MinWideModeWidth
     {
@@ -146,7 +145,7 @@ public class TwoPaneView : Control
     }
 
     /// <summary>
-    /// Height above which the panes stack.
+    /// Gets or sets the height above which the panes stack.
     /// </summary>
     public double MinTallModeHeight
     {
@@ -155,7 +154,7 @@ public class TwoPaneView : Control
     }
 
     /// <summary>
-    /// Pane order, or single pane, when the view is wide.
+    /// Gets or sets the pane order, or single pane, when the view is wide.
     /// </summary>
     public TwoPaneViewWideModeConfiguration WideModeConfiguration
     {
@@ -164,7 +163,7 @@ public class TwoPaneView : Control
     }
 
     /// <summary>
-    /// Pane order, or single pane, when the view is tall.
+    /// Gets or sets the pane order, or single pane, when the view is tall.
     /// </summary>
     public TwoPaneViewTallModeConfiguration TallModeConfiguration
     {
@@ -173,7 +172,7 @@ public class TwoPaneView : Control
     }
 
     /// <summary>
-    /// Split at the fold on a flat device too. A half-opened device always splits there.
+    /// Gets or sets whether a flat device splits at the fold too; a half-open device always does.
     /// </summary>
     public bool SnapToFold
     {
@@ -182,7 +181,7 @@ public class TwoPaneView : Control
     }
 
     /// <summary>
-    /// How the panes are currently shown.
+    /// Gets how the panes are currently shown.
     /// </summary>
     public TwoPaneViewMode Mode
     {
@@ -195,7 +194,7 @@ public class TwoPaneView : Control
     }
 
     /// <summary>
-    /// Raised when <see cref="Mode"/> changes.
+    /// Occurs when <see cref="Mode"/> changes.
     /// </summary>
     public event EventHandler? ModeChanged;
 
@@ -218,7 +217,17 @@ public class TwoPaneView : Control
 
             InvalidateMeasure();
         }
+        else if (change.Property == Fold.StateProperty
+                 && change.OldValue is FoldState oldState && change.NewValue is FoldState newState
+                 && AffectsLayout(oldState, newState))
+        {
+            InvalidateMeasure();
+        }
     }
+
+    // The hinge angle changes many times a second while folding and never moves the panes.
+    private static bool AffectsLayout(FoldState a, FoldState b) =>
+        a.Posture != b.Posture || a.FoldBounds != b.FoldBounds || a.IsSeparating != b.IsSeparating;
 
     /// <inheritdoc/>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -236,6 +245,7 @@ public class TwoPaneView : Control
         base.OnDetachedFromVisualTree(e);
         LayoutUpdated -= OnLayoutUpdated;
         _topLevel = null;
+        _fromTopLevel = Matrix.Identity;
     }
 
     // The fold is reported in top-level coordinates; track where this view sits (and any scaling)
@@ -245,7 +255,10 @@ public class TwoPaneView : Control
         if (_topLevel?.TransformToVisual(this) is not { } transform || transform == _fromTopLevel)
             return;
         _fromTopLevel = transform;
-        InvalidateMeasure();
+
+        // Without a fold the position doesn't matter; skip the extra pass while scrolling or animating.
+        if (GetValue(Fold.StateProperty).FoldBounds is not null)
+            InvalidateMeasure();
     }
 
     /// <inheritdoc/>
@@ -256,7 +269,6 @@ public class TwoPaneView : Control
             double.IsInfinity(availableSize.Width) ? Bounds.Width : availableSize.Width,
             double.IsInfinity(availableSize.Height) ? Bounds.Height : availableSize.Height);
         var layout = ComputeLayout(layoutSize);
-        Mode = layout.Mode;
         UpdateVisualChildren(layout);
 
         var desired = default(Size);
@@ -279,9 +291,10 @@ public class TwoPaneView : Control
     /// <inheritdoc/>
     protected override Size ArrangeOverride(Size finalSize)
     {
+        // Mode follows the arranged layout only, so ModeChanged fires at most once per layout pass.
         var layout = ComputeLayout(finalSize);
-        Mode = layout.Mode;
         UpdateVisualChildren(layout);
+        Mode = layout.Mode;
 
         if (layout.Pane1 is { } r1)
             Pane1?.Arrange(r1);

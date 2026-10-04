@@ -3,9 +3,7 @@ using Avalonia.Animation.Easings;
 namespace Nova.Avalonia.Foldable.Showcase.Animation;
 
 /// <summary>
-/// Port of Flutter's <c>Interval</c> curve: holds at 0 until <see cref="Begin"/>, runs
-/// <see cref="Curve"/> over the window, then holds at 1. It is how the vignettes delay part of an
-/// animation without giving it a clock of its own.
+/// Port of Flutter's <c>Interval</c>: 0 until <see cref="Begin"/>, <see cref="Curve"/> until <see cref="End"/>, then 1.
 /// </summary>
 public sealed class IntervalEasing : Easing
 {
@@ -35,8 +33,7 @@ public sealed class IntervalEasing : Easing
     {
         var t = Math.Clamp((progress - Begin) / (End - Begin), 0d, 1d);
 
-        // The ends are returned untouched so a curve that does not pass exactly through 0 and 1
-        // cannot make the animation jump at either edge.
+        // Return the ends untouched so a curve that misses 0 or 1 can't cause a jump.
         return t is 0d or 1d ? t : Curve?.Ease(t) ?? t;
     }
 }

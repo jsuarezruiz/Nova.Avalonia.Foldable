@@ -19,11 +19,7 @@
     </Style>
   </UserControl.Styles>
 
-  <!--
-    The guide is held to 600 wide and centred. MaxWidth rather than Width, because Flutter clamps a
-    Container's width to the constraints it is given (on a narrower screen its 600 becomes the
-    screen width), whereas Avalonia's Width is taken literally and would hang off both edges.
-  -->
+  <!-- MaxWidth, not Width: Flutter clamps the 600 to the screen. -->
   <Panel MaxWidth="600" HorizontalAlignment="Stretch">
 
     <ScrollViewer Name="Scroller" VerticalScrollBarVisibility="Hidden">

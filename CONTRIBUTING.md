@@ -21,6 +21,18 @@ dotnet test tests/Nova.Avalonia.Foldable.Tests
 dotnet run --project samples/Nova.Avalonia.Foldable.Showcase/Nova.Avalonia.Foldable.Showcase.Desktop
 ```
 
+Without the `ios` and `android` workloads (on Linux, for example), set `DesktopOnly=true` to build and test only the `net10.0` target:
+
+```bash
+DesktopOnly=true dotnet test tests/Nova.Avalonia.Foldable.Tests
+```
+
+To preview the documentation site, restore the pinned DocFX (`dotnet tool restore`) and run:
+
+```bash
+dotnet docfx docs/docfx.json --serve
+```
+
 The README's [Testing on simulators and emulators](README.md#testing-on-simulators-and-emulators) section explains how to run the samples on the iPhone Duo simulator and the Pixel Fold emulator.
 
 ## Making changes
@@ -30,7 +42,7 @@ The README's [Testing on simulators and emulators](README.md#testing-on-simulato
 3. Match the surrounding code: naming, comment density, file layout. The repository uses `Nullable` everywhere; keep new code warning-free.
 4. Add or update tests. Layout logic belongs in the headless tests under `tests/`, driven by `SimulatedFoldStateProvider`, so it can be checked without a device.
 5. If you touch a platform provider, run the Sample on that platform and include what it reported in the pull request (a screenshot or the `FOLDDIAG` log lines).
-6. Update the README or FAQ when behaviour changes.
+6. Update the README, the documentation site or the FAQ when behavior changes.
 
 ### Where things live
 
@@ -43,6 +55,7 @@ The README's [Testing on simulators and emulators](README.md#testing-on-simulato
 | Android implementation | `src/Nova.Avalonia.Foldable/Platforms/Android` |
 | iOS 27.1 bindings (mirror dotnet/macios#26705) | `src/Nova.Avalonia.Foldable.Bindings.iOS` |
 | Tests | `tests/Nova.Avalonia.Foldable.Tests` |
+| Documentation site (DocFX) and FAQ | `docs` |
 
 Folders are for navigation only: every public type stays in the `Nova.Avalonia.Foldable` namespace, so apps need one `using` and one XAML `xmlns`.
 

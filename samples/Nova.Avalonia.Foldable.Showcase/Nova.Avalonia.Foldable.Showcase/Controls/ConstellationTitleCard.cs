@@ -8,10 +8,7 @@ namespace Nova.Avalonia.Foldable.Showcase.Controls;
 /// <summary>
 /// A constellation's name and what it depicts. Port of <c>constellation_title_card.dart</c>.
 /// </summary>
-/// <remarks>
-/// Alternate entries are drawn in red outline rather than solid white, which is what gives the list
-/// its rhythm as it scrolls. The same card is used in the detail view, so it can fly between the two.
-/// </remarks>
+/// <remarks>Used in both the list and the detail view so it can fly between them.</remarks>
 public sealed class ConstellationTitleCard : TemplatedControl
 {
     public static readonly StyledProperty<Constellation?> ConstellationProperty =

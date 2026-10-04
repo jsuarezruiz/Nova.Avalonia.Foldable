@@ -1,0 +1,50 @@
+name: Build and test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      DesktopOnly: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Test
+        run: dotnet test tests/Nova.Avalonia.Foldable.Tests --configuration Release
+
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install workloads
+        run: dotnet workload install ios android
+
+      - name: Build library
+        run: dotnet build src/Nova.Avalonia.Foldable --configuration Release
+
+      - name: Build samples
+        run: |
+          dotnet build samples/Nova.Avalonia.Foldable.Showcase/Nova.Avalonia.Foldable.Showcase.Desktop --configuration Release
+          dotnet build samples/Nova.Avalonia.Foldable.Showcase/Nova.Avalonia.Foldable.Showcase.Android --configuration Release
+          dotnet build samples/Nova.Avalonia.Foldable.Sample/Nova.Avalonia.Foldable.Sample.Android --configuration Release

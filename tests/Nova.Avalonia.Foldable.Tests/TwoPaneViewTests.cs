@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -45,9 +46,12 @@ public class TwoPaneViewTests
         Assert.Equal(TwoPaneViewTallModeConfiguration.TopBottom, view.TallModeConfiguration);
         Assert.Equal(TwoPaneViewMode.SinglePane, view.Mode);
 
+        // The headless window applies the new size on the dispatcher.
         window.Width = 642;
+        Dispatcher.UIThread.RunJobs();
         view.UpdateLayout();
 
+        Assert.Equal(642, view.Bounds.Width);
         Assert.Equal(TwoPaneViewMode.Wide, view.Mode);
     }
 
@@ -226,5 +230,19 @@ public class TwoPaneViewTests
 
         Assert.Equal(TwoPaneViewMode.Wide, view.Mode);
         Assert.Equal(0, changes);
+    }
+
+    [AvaloniaFact]
+    public void Hinge_Angle_Alone_Does_Not_Invalidate_Layout()
+    {
+        var state = FoldAt(DevicePosture.HalfOpened, new Rect(480, 0, 40, 500), separating: true);
+        var (_, view, fold) = Create(1000, 500, state);
+        view.UpdateLayout();
+
+        fold.Current = state with { HingeAngle = 95 };
+        Assert.True(view.IsMeasureValid);
+
+        fold.Current = state with { Posture = DevicePosture.Flat, IsSeparating = false };
+        Assert.False(view.IsMeasureValid);
     }
 }

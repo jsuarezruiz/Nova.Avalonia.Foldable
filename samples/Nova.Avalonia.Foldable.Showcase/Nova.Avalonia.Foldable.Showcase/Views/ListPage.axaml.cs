@@ -9,14 +9,9 @@ using Nova.Avalonia.Foldable.Showcase.Models;
 namespace Nova.Avalonia.Foldable.Showcase.Views;
 
 /// <summary>
-/// The scrolling guide. Port of <c>constellation_list_view.dart</c> and
-/// <c>constellation_list_renderer.dart</c>.
+/// The scrolling guide. Port of <c>constellation_list_view.dart</c> and <c>constellation_list_renderer.dart</c>.
 /// </summary>
-/// <remarks>
-/// Entries alternate side and colour, and each is nudged outwards past the edge it hangs off, so the
-/// list reads as two ragged columns rather than one tidy one. The indents come from a seeded
-/// generator so they are the same on every run, the original notes its designers wanted them stable.
-/// </remarks>
+/// <remarks>Indents come from a seeded generator so the layout is stable.</remarks>
 public partial class ListPage : UserControl
 {
     private const double EdgeNudge = 25d;
@@ -35,19 +30,18 @@ public partial class ListPage : UserControl
     }
 
     /// <summary>
-    /// Raised as the list scrolls, carrying how far it moved since the last report.
+    /// Occurs when the list scrolls, with the distance moved since the last report.
     /// </summary>
     public event EventHandler<double>? Scrolled;
 
     /// <summary>
-    /// Raised when an entry is tapped, carrying the card that was hit.
+    /// Occurs when an entry is tapped, with the tapped card.
     /// </summary>
     public event EventHandler<ConstellationTitleCard>? EntryTapped;
 
     private void Build()
     {
-        // Exact Random(1).nextInt(4) * 20 sequence from the original Dart list. System.Random(1)
-        // produces a different layout even though both are deterministic.
+        // Dart's Random(1).nextInt(4) * 20 sequence; System.Random(1) produces a different one.
         double[] indents = [20, 0, 60, 60, 60, 60, 20, 0, 20, 0, 20, 40, 60, 20, 0];
 
         for (var index = 0; index < DemoData.Constellations.Count; index++)

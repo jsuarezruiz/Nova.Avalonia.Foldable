@@ -4,10 +4,7 @@ using Avalonia.Controls;
 namespace Nova.Avalonia.Foldable.Showcase.Animation;
 
 /// <summary>
-/// Drives a per-frame callback off the owning <see cref="TopLevel"/>'s compositor clock, reporting
-/// the time elapsed since <see cref="Start"/>. This is the equivalent of Flutter's
-/// <c>Ticker</c>/<c>AnimationController</c> pairing, and is what the vignettes use whenever an
-/// animation is driven by physics rather than by a fixed-duration transition.
+/// Calls back once per frame of the owner's <see cref="TopLevel"/> with the time since <see cref="Start"/>, like Flutter's <c>Ticker</c>.
 /// </summary>
 public sealed class FrameTicker
 {
@@ -20,8 +17,7 @@ public sealed class FrameTicker
     private bool _waitingForAttach;
 
     /// <summary>
-    /// Initializes a new ticker for <paramref name="owner"/>, invoking <paramref name="onTick"/>
-    /// once per rendered frame with the elapsed time since the ticker was started.
+    /// Initializes a new ticker that invokes <paramref name="onTick"/> once per frame of <paramref name="owner"/>.
     /// </summary>
     public FrameTicker(Visual owner, Action<TimeSpan> onTick)
     {
@@ -55,8 +51,7 @@ public sealed class FrameTicker
     /// </summary>
     public void Stop() => IsRunning = false;
 
-    // Stopping and starting again from inside the tick would otherwise leave two frames asked for:
-    // one from the restart and one from the tail below, so the callback would run twice a frame.
+    // Guards against a restart inside the tick requesting a second frame, which would tick twice per frame.
     private void RequestFrame()
     {
         if (_framePending)

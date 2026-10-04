@@ -3,7 +3,7 @@ namespace Nova.Avalonia.Foldable.Showcase.Models;
 /// <summary>
 /// The constellations the vignette ships with. Port of <c>DemoData</c>.
 /// </summary>
-/// <remarks>Five of them, listed three times over, which is what gives the list its length.</remarks>
+/// <remarks>Five constellations repeated three times.</remarks>
 public static class DemoData
 {
     private const int Repeats = 3;

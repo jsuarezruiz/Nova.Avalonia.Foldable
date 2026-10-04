@@ -7,11 +7,8 @@
       <ControlTemplate>
         <StackPanel HorizontalAlignment="Center">
 
-          <!--
-            42pt over a line box of 1.3, so the name sits with air above and below it. The original
-            pads the string with spaces to dodge a Flutter Hero bug. Keep those spaces: they also
-            determine the ragged list's alignment and the shared-element bounds.
-          -->
+          <!-- The spaces come from the original, which used them to dodge a Flutter Hero bug.
+               Keep them: they set the list's ragged alignment and the flight bounds. -->
           <controls:OutlinedText Name="PART_Title"
                                  Text="{Binding $parent[controls:ConstellationTitleCard].Constellation.Title, StringFormat='  {0}  '}"
                                  FontFamily="{StaticResource TitleFont}"

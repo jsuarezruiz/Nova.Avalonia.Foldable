@@ -6,6 +6,8 @@
     <IsBindingProject>true</IsBindingProject>
     <RootNamespace>Nova.Avalonia.Foldable.Bindings.iOS</RootNamespace>
     <NoBindingEmbedding>true</NoBindingEmbedding>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Description>Temporary .NET bindings for the iOS 27.1 hinge and reserved-region APIs used by Nova.Avalonia.Foldable, mirroring dotnet/macios#26705.</Description>
   </PropertyGroup>
 
   <ItemGroup>

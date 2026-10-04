@@ -10,8 +10,7 @@ using Nova.Avalonia.Foldable.Showcase.Models;
 namespace Nova.Avalonia.Foldable.Showcase.Views;
 
 /// <summary>
-/// The vignette's shell adapted to foldables: list and detail on either side of the fold, one star
-/// field behind both. The hinge only drives an effect: moving it warps the stars like scrolling.
+/// The app shell: list and detail on either side of the fold over one star field.
 /// </summary>
 public partial class MainView : UserControl
 {
@@ -22,7 +21,7 @@ public partial class MainView : UserControl
     // How much star speed one degree of hinge travel is worth.
     private const double HingeWarp = 0.6d;
 
-    // Keeps the entries nudged towards the fold clear of it.
+    // Keeps the entries nudged toward the fold clear of it.
     private const double FoldGutter = 32d;
 
     // The width the guide was designed for; narrower panes get the list scaled to fit.
@@ -74,8 +73,6 @@ public partial class MainView : UserControl
             }
         };
 
-        // With two panes the detail is visible from the start, so give it something to show.
-        ShowDetail(DemoData.Constellations[0], isRedMode: false).Reveal(FirstReveal);
         UpdateCaption();
     }
 
@@ -138,6 +135,12 @@ public partial class MainView : UserControl
 
     private void OnModeChanged(object? sender, EventArgs e)
     {
+        // Once two panes are on screen the detail is visible, so give it something to show.
+        if (!IsSinglePane && _detail is null)
+        {
+            ShowDetail(DemoData.Constellations[0], isRedMode: false).Reveal(FirstReveal);
+        }
+
         if (_detail is { } detail)
         {
             detail.IsReturnVisible = IsSinglePane;
@@ -386,6 +389,9 @@ public partial class MainView : UserControl
         {
             source.Opacity = 1d;
         }
+
+        // The target can be a detail page's card; don't hold on to the page after it's replaced.
+        _flightTarget = null;
     }
 
     private void OnStarFlightChanged(double progress) => Stars.Speed = FlightSpeedAt(progress);

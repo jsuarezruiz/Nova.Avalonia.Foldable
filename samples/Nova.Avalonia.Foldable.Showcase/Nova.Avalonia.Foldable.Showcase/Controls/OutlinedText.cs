@@ -9,11 +9,7 @@ namespace Nova.Avalonia.Foldable.Showcase.Controls;
 /// <summary>
 /// Draws a line of text either filled or as an outline.
 /// </summary>
-/// <remarks>
-/// The original sets a <c>Paint</c> with <c>PaintingStyle.stroke</c> on its text style, which
-/// Flutter honours directly. Avalonia's <see cref="TextBlock"/> only fills, so the text is turned
-/// into geometry and either filled or stroked with a pen, which is what the paint style amounts to.
-/// </remarks>
+/// <remarks>Avalonia's <see cref="TextBlock"/> can't stroke, so the text is drawn as geometry.</remarks>
 public sealed class OutlinedText : Control
 {
     public static readonly StyledProperty<string?> TextProperty =
@@ -105,10 +101,10 @@ public sealed class OutlinedText : Control
             return;
         }
 
-        // The line box may be taller than the glyphs, so the text is centred in whatever is left.
+        // The line box may be taller than the glyphs, so the text is centered in it.
         var top = double.IsNaN(LineHeight) ? 0d : (LineHeight - formatted.Height) / 2d;
 
-        // The glyphs only change with the text, so the geometry is kept from draw to draw.
+        // The geometry is cached until the text or its position changes.
         if (_geometry is null || _geometryTop != top)
         {
             _geometry = formatted.BuildGeometry(new Point(0d, top));
@@ -141,7 +137,7 @@ public sealed class OutlinedText : Control
     {
         base.OnPropertyChanged(change);
 
-        // Anything that reshapes or recolours the glyphs drops what was kept.
+        // Anything that reshapes or recolors the glyphs clears the cache.
         if (change.Property == TextProperty || change.Property == FontFamilyProperty ||
             change.Property == FontSizeProperty || change.Property == ForegroundProperty)
         {

@@ -13,12 +13,7 @@ namespace Nova.Avalonia.Foldable.Showcase.Views;
 /// <summary>
 /// One constellation, full size. Port of <c>constellation_detail_view.dart</c>.
 /// </summary>
-/// <remarks>
-/// The chart and its lettering are held back until the flight through the stars is nearly over, then
-/// arrive on overlapping slices of one clock, the chart swelling from nothing, the lettering fading
-/// in a little later. Nothing here knows about the star field; it is choreographed purely by the
-/// delay it is handed.
-/// </remarks>
+/// <remarks>Chart and lettering appear near the end of the flight, timed by the delay passed in.</remarks>
 public partial class DetailPage : UserControl
 {
     public static readonly StyledProperty<Constellation?> ConstellationProperty =
@@ -48,6 +43,7 @@ public partial class DetailPage : UserControl
     private Bitmap? _chartImage;
     private Bitmap? _labelImage;
     private bool _retired;
+    private int _artworkVersion;
     private readonly AnimationController _reveal;
 
     public DetailPage()
@@ -64,7 +60,7 @@ public partial class DetailPage : UserControl
         ConstellationProperty.Changed.AddClassHandler<DetailPage>((x, _) => x.LoadArtwork());
 
     /// <summary>
-    /// Raised when the return button is pressed.
+    /// Occurs when the return button is pressed.
     /// </summary>
     public event EventHandler? ReturnRequested;
 
@@ -168,20 +164,27 @@ public partial class DetailPage : UserControl
         label?.Dispose();
     }
 
-    // Loads the artwork here rather than binding the file locations straight at the images: a
-    // binding hands the target a Uri, which is not converted to an image at runtime,
-    // and the pictures simply never appear.
-    private void LoadArtwork()
+    // Loaded in code because binding a Uri to Image.Source isn't converted at runtime.
+    private async void LoadArtwork()
     {
+        ReleaseArtwork();
+        var version = ++_artworkVersion;
         if (Constellation is not { } constellation)
         {
-            ChartImage = LabelImage = null;
             return;
         }
 
-        ReleaseArtwork();
-        ChartImage = Decode(constellation.ChartUri);
-        LabelImage = Decode(constellation.LabelUri);
+        // Decoded off the UI thread so the flight starts without a hitch.
+        var (chart, label) = await Task.Run(() => (Decode(constellation.ChartUri), Decode(constellation.LabelUri)));
+        if (version != _artworkVersion || _retired)
+        {
+            chart.Dispose();
+            label.Dispose();
+            return;
+        }
+
+        ChartImage = chart;
+        LabelImage = label;
     }
 
     private static Bitmap Decode(Uri uri)

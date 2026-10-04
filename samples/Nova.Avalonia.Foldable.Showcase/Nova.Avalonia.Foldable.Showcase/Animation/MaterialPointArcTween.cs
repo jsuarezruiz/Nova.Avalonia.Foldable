@@ -3,15 +3,9 @@ using Avalonia;
 namespace Nova.Avalonia.Foldable.Showcase.Animation;
 
 /// <summary>
-/// Interpolates a point along a circular arc rather than a straight line. Port of Flutter's
-/// <c>MaterialPointArcTween</c>, which is what gives a Material shared-element transition its
-/// characteristic curved path.
+/// Interpolates a point along a circular arc. Port of Flutter's <c>MaterialPointArcTween</c>.
 /// </summary>
-/// <remarks>
-/// The arc is only used when the two points differ on both axes; a move that is essentially
-/// horizontal or vertical is interpolated straight, because an arc between two points on a line has
-/// no defined centre.
-/// </remarks>
+/// <remarks>Moves that are nearly horizontal or vertical are interpolated in a straight line.</remarks>
 public sealed class MaterialPointArcTween
 {
     private const double OnAxisDelta = 2d;
@@ -49,7 +43,7 @@ public sealed class MaterialPointArcTween
 
         if (deltaX < deltaY)
         {
-            // A mostly vertical move: the arc's centre sits level with the end point.
+            // A mostly vertical move: the arc's center sits level with the end point.
             _radius = distance * distance / Distance(corner - begin) / 2d;
             _center = new Point(end.X + (_radius * Math.Sign(begin.X - end.X)), end.Y);
 
@@ -66,7 +60,7 @@ public sealed class MaterialPointArcTween
         }
         else
         {
-            // A mostly horizontal move: the centre sits directly above or below the begin point.
+            // A mostly horizontal move: the center sits directly above or below the begin point.
             _radius = distance * distance / Distance(corner - end) / 2d;
             _center = new Point(begin.X, begin.Y + (Math.Sign(end.Y - begin.Y) * _radius));
 

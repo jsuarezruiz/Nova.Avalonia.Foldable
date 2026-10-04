@@ -8,12 +8,12 @@ namespace Nova.Avalonia.Foldable;
 public interface IFoldStateProvider : IDisposable
 {
     /// <summary>
-    /// The latest fold state.
+    /// Gets the latest fold state.
     /// </summary>
     FoldState Current { get; }
 
     /// <summary>
-    /// Raised when <see cref="Current"/> changes.
+    /// Occurs when <see cref="Current"/> changes.
     /// </summary>
     event EventHandler<FoldState>? Changed;
 

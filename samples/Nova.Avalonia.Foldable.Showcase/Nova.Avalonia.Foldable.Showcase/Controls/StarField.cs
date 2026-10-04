@@ -9,20 +9,9 @@ using Nova.Avalonia.Foldable.Showcase.Animation;
 namespace Nova.Avalonia.Foldable.Showcase.Controls;
 
 /// <summary>
-/// A field of stars flying past the viewer, drawn in perspective. Port of
-/// <c>star_field.dart</c> and <c>star_field_painter.dart</c>.
+/// A perspective star field flying past the viewer. Port of <c>star_field.dart</c> and <c>star_field_painter.dart</c>.
 /// </summary>
-/// <remarks>
-/// Each star holds a position in a boxy 3D space and is divided by its own depth to land on screen,
-/// so the near ones sweep outwards fast while the distant ones barely move. Depth also sets how big
-/// a star is drawn, which is what turns a flat scatter of dots into something with distance in it.
-/// <para>
-/// <see cref="Speed"/> is how far the field advances each frame, and everything else is driven from
-/// it: the list hands over its scroll velocity, and tapping through to a constellation runs a
-/// sequence that pulls the field back before throwing it forward. Negative speeds run the field
-/// backwards, which is how the pull-back reads.
-/// </para>
-/// </remarks>
+/// <remarks>Scrolling and navigation drive <see cref="Speed"/>; negative values run the field backward.</remarks>
 public sealed class StarField : Control
 {
     public static readonly StyledProperty<double> SpeedProperty =
@@ -81,12 +70,12 @@ public sealed class StarField : Control
 
         context.FillRectangle(Brushes.Black, new Rect(size));
 
-        // The field is centred, so a star's own coordinates are measured from the middle of the view.
+        // Star coordinates are relative to the center of the view.
         using var _ = context.PushTransform(Matrix.CreateTranslation(size.Width / 2d, size.Height / 2d));
 
         foreach (var star in _stars)
         {
-            // Depth both shrinks the star and pushes it towards the centre.
+            // Depth both shrinks the star and pulls it toward the center.
             var scale = 0.1d + (star.Size * (1d - (star.Z / size.Width)));
             var position = new Point(star.X / star.Z * size.Width, star.Y / star.Z * size.Height);
 
@@ -99,8 +88,8 @@ public sealed class StarField : Control
 
             if (_glow is { } glow && star.IsGlowing)
             {
-                // The halo breathes on two out-of-step waves, so no two glows pulse together.
-                var time = Environment.TickCount64 / 200d;
+                // The halo's width and height oscillate out of step, each star at its own phase.
+                var time = (Environment.TickCount64 / 200d) + star.Phase;
                 var width = (scale * 6d) + (2d * Math.Sin(time * 0.5d));
                 var height = (scale * 6d) + (2d * Math.Cos(time * 0.75d));
 
@@ -116,7 +105,11 @@ public sealed class StarField : Control
     {
         base.OnAttachedToVisualTree(e);
 
-        _glow ??= new Bitmap(AssetLoader.Open(new Uri("avares://Nova.Avalonia.Foldable.Showcase/Assets/Images/glow.png")));
+        if (_glow is null)
+        {
+            using var stream = AssetLoader.Open(new Uri("avares://Nova.Avalonia.Foldable.Showcase/Assets/Images/glow.png"));
+            _glow = new Bitmap(stream);
+        }
 
         if (_stars.Count == 0)
         {
@@ -136,9 +129,8 @@ public sealed class StarField : Control
         _ticker?.Stop();
     }
 
-    // Moves every star towards the viewer by Speed. A star that arrives is thrown
-    // back to the far end with fresh values; one pushed out the back simply wraps to the front,
-    // which is what lets a negative speed run the field in reverse without emptying it.
+    // Moves every star toward the viewer by Speed. Stars that arrive respawn at the far end;
+    // stars pushed past the far end wrap to the front, so a negative speed doesn't empty the field.
     private void Advance()
     {
         foreach (var star in _stars)
@@ -165,6 +157,7 @@ public sealed class StarField : Control
         star.Z = randomDepth ? _random.NextDouble() * MaxZ : MaxZ;
 
         star.IsGlowing = _random.NextDouble() < GlowingShare;
+        star.Phase = _random.NextDouble() * Math.Tau;
 
         if (star.IsGlowing)
         {
@@ -191,6 +184,8 @@ public sealed class StarField : Control
         public double Size { get; set; } = 1d;
 
         public bool IsGlowing { get; set; }
+
+        public double Phase { get; set; }
 
         public IBrush Brush { get; set; } = Brushes.White;
     }

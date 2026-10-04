@@ -3,18 +3,9 @@ using Avalonia;
 namespace Nova.Avalonia.Foldable.Showcase.Animation;
 
 /// <summary>
-/// Drives a value from 0 to 1 and back at a constant rate, the equivalent of Flutter's
-/// <c>AnimationController</c>. Use it in place of a <see cref="global::Avalonia.Animation.Transition{T}"/>
-/// when the animation has to be reversible from wherever it currently sits, or when a curve has to
-/// be applied to the raw progress rather than to the interpolation.
+/// Drives a value between 0 and 1 at a constant rate, like Flutter's <c>AnimationController</c>.
 /// </summary>
-/// <remarks>
-/// The value is deliberately left un-eased: <see cref="Duration"/> is the time for a full traverse,
-/// so reversing half way through takes half the time, and applying a curve to
-/// <see cref="Value"/> yourself reproduces Flutter's ordering. A transition cannot do either, it
-/// always runs for its full duration and always eases the interpolation, which reverses the shape
-/// of the curve instead of the direction of travel.
-/// </remarks>
+/// <remarks>Un-eased, so reversing midway takes proportional time, as in Flutter.</remarks>
 public sealed class AnimationController
 {
     private readonly FrameTicker _ticker;
@@ -25,8 +16,7 @@ public sealed class AnimationController
     private int _direction;
 
     /// <summary>
-    /// Initializes a new controller ticking off <paramref name="owner"/>'s clock and reporting
-    /// every change to <paramref name="onValueChanged"/>.
+    /// Initializes a new controller on <paramref name="owner"/>'s clock that reports to <paramref name="onValueChanged"/>.
     /// </summary>
     public AnimationController(Visual owner, Action<double> onValueChanged)
     {
@@ -50,12 +40,12 @@ public sealed class AnimationController
     public bool IsAnimating => _direction != 0;
 
     /// <summary>
-    /// Runs towards 1 from wherever the value currently sits.
+    /// Runs toward 1 from wherever the value currently sits.
     /// </summary>
     public void Forward() => Run(1);
 
     /// <summary>
-    /// Runs towards 0 from wherever the value currently sits.
+    /// Runs toward 0 from wherever the value currently sits.
     /// </summary>
     public void Reverse() => Run(-1);
 
@@ -98,8 +88,7 @@ public sealed class AnimationController
 
     private void OnTick(TimeSpan elapsed)
     {
-        // A restarted ticker reports elapsed from zero again, so the step is floored at zero rather
-        // than allowed to run the animation backwards for one frame.
+        // A restarted ticker reports elapsed from zero, so floor the step to avoid a backward frame.
         var step = _hasLastElapsed ? Math.Max(0d, (elapsed - _lastElapsed).TotalSeconds) : 0d;
 
         _lastElapsed = elapsed;
@@ -110,8 +99,7 @@ public sealed class AnimationController
 
         Value = Math.Clamp(Value + (_direction * rate), 0d, 1d);
 
-        // Only the bound being travelled towards ends the run. Testing for either one would stop a
-        // forward run on its first frame, which begins at zero and has not moved yet.
+        // Only the target bound ends the run; a forward run starts at 0 and would stop on its first frame.
         if (Value == target)
         {
             Stop();

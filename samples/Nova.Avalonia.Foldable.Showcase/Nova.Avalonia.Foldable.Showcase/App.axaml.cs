@@ -9,7 +9,7 @@ namespace Nova.Avalonia.Foldable.Showcase;
 public partial class App : Application
 {
     /// <summary>
-    /// Lets the desktop head host the view next to the fold simulator.
+    /// Gets or sets the factory the desktop head uses to host the view next to the fold simulator.
     /// </summary>
     public static Func<MainView, Window>? MainWindowFactory { get; set; }
 

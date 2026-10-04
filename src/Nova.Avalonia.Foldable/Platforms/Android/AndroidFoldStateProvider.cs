@@ -2,6 +2,7 @@ using System;
 using Android.App;
 using Android.Content;
 using Android.Hardware;
+using Android.OS;
 using Android.Runtime;
 using AndroidX.Core.Content;
 using AndroidX.Core.Util;
@@ -9,27 +10,26 @@ using AndroidX.Window.Java.Layout;
 using AndroidX.Window.Layout;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using AndroidView = Android.Views.View;
 using JavaObject = Java.Lang.Object;
 
 namespace Nova.Avalonia.Foldable.Platforms.Android;
 
 /// <summary>
-/// Fold from Jetpack WindowManager's <see cref="IFoldingFeature"/>, hinge angle from the sensor where
-/// the device has one.
+/// Fold from Jetpack WindowManager's <see cref="IFoldingFeature"/>, hinge angle from the sensor when present.
 /// </summary>
-internal sealed class AndroidFoldStateProvider : JavaObject, IConsumer, ISensorEventListener, IFoldStateProvider
+internal sealed class AndroidFoldStateProvider : JavaObject, IConsumer, ISensorEventListener, global::Android.App.Application.IActivityLifecycleCallbacks, IFoldStateProvider
 {
     private static readonly Java.Lang.Class FoldingFeatureClass = Java.Lang.Class.FromType(typeof(IFoldingFeature));
 
     private readonly TopLevel _topLevel;
     private readonly AndroidView _view;
+    private readonly Activity _activity;
     private readonly WindowInfoTrackerCallbackAdapter _tracker;
     private readonly SensorManager? _sensors;
     private readonly Sensor? _hinge;
-    private readonly IActivatableLifetime? _lifetime;
-    private WindowLayoutInfo? _layout;
+    private readonly int[] _location = new int[2];
+    private FoldInfo? _fold;
     private double? _hingeAngle;
     private bool _seenFold;
 
@@ -37,6 +37,7 @@ internal sealed class AndroidFoldStateProvider : JavaObject, IConsumer, ISensorE
     {
         _topLevel = topLevel;
         _view = view;
+        _activity = activity;
 
         _tracker = new WindowInfoTrackerCallbackAdapter(WindowInfoTracker.Companion.GetOrCreate(activity));
         _tracker.AddWindowLayoutInfoListener(activity, ContextCompat.GetMainExecutor(activity)!, this);
@@ -49,13 +50,8 @@ internal sealed class AndroidFoldStateProvider : JavaObject, IConsumer, ISensorE
             StartSensor();
         }
 
-        // Sensor listeners keep running in the background unless removed; pause while the app is stopped.
-        _lifetime = global::Avalonia.Application.Current?.TryGetFeature<IActivatableLifetime>();
-        if (_lifetime is not null)
-        {
-            _lifetime.Activated += OnActivated;
-            _lifetime.Deactivated += OnDeactivated;
-        }
+        // Sensor listeners keep running in the background unless removed; pause while the activity is stopped.
+        activity.Application?.RegisterActivityLifecycleCallbacks(this);
 
         Current = ReadState();
     }
@@ -84,11 +80,33 @@ internal sealed class AndroidFoldStateProvider : JavaObject, IConsumer, ISensorE
         Changed?.Invoke(this, state);
     }
 
-    // WindowLayoutInfo updates, delivered on the main thread.
+    // WindowLayoutInfo updates, delivered on the main thread. The fold is copied out here, so
+    // hinge angle updates never go back to Java.
     public void Accept(JavaObject? value)
     {
+        _fold = null;
+
         // The generic Consumer hands over a plain Java object; cast on the Java side.
-        _layout = value?.JavaCast<WindowLayoutInfo>();
+        using var layout = value?.JavaCast<WindowLayoutInfo>();
+        if (layout?.DisplayFeatures is { } features)
+        {
+            foreach (var feature in features)
+            {
+                // A C# type test fails on these interface wrappers; ask the Java side.
+                if (_fold is null && feature is JavaObject javaFeature && FoldingFeatureClass.IsInstance(javaFeature))
+                {
+                    using var fold = javaFeature.JavaCast<IFoldingFeature>()!;
+                    using var bounds = fold.Bounds;
+                    _fold = new FoldInfo(
+                        bounds.Left, bounds.Top, bounds.Width(), bounds.Height(),
+                        Equals(fold.State, FoldingFeatureState.HalfOpened),
+                        fold.IsSeparating);
+                }
+
+                (feature as IDisposable)?.Dispose();
+            }
+        }
+
         Refresh();
     }
 
@@ -105,71 +123,72 @@ internal sealed class AndroidFoldStateProvider : JavaObject, IConsumer, ISensorE
     {
     }
 
+    public void OnActivityStarted(Activity activity)
+    {
+        if (activity == _activity)
+            StartSensor();
+    }
+
+    public void OnActivityStopped(Activity activity)
+    {
+        if (activity == _activity)
+            _sensors?.UnregisterListener(this);
+    }
+
+    public void OnActivityCreated(Activity activity, Bundle? savedInstanceState)
+    {
+    }
+
+    public void OnActivityResumed(Activity activity)
+    {
+    }
+
+    public void OnActivityPaused(Activity activity)
+    {
+    }
+
+    public void OnActivitySaveInstanceState(Activity activity, Bundle outState)
+    {
+    }
+
+    public void OnActivityDestroyed(Activity activity)
+    {
+    }
+
     private void StartSensor()
     {
         if (_hinge is not null)
             _sensors?.RegisterListener(this, _hinge, SensorDelay.Ui);
     }
 
-    private void OnActivated(object? sender, ActivatedEventArgs e)
-    {
-        if (e.Kind == ActivationKind.Background)
-            StartSensor();
-    }
-
-    private void OnDeactivated(object? sender, ActivatedEventArgs e)
-    {
-        if (e.Kind == ActivationKind.Background)
-            _sensors?.UnregisterListener(this);
-    }
-
     private FoldState ReadState()
     {
-        IFoldingFeature? fold = null;
-        if (_layout?.DisplayFeatures is { } features)
-        {
-            // A C# type test fails on these interface wrappers; ask the Java side.
-            foreach (var feature in features)
-            {
-                if (feature is JavaObject javaFeature && FoldingFeatureClass.IsInstance(javaFeature))
-                {
-                    fold = javaFeature.JavaCast<IFoldingFeature>();
-                    break;
-                }
-            }
-        }
-
-        _seenFold |= fold is not null;
+        _seenFold |= _fold is not null;
         var isFoldable = _seenFold || _hinge is not null;
         if (!isFoldable)
             return FoldState.None;
 
         DevicePosture posture;
-        if (fold is not null)
-            posture = Equals(fold.State, FoldingFeatureState.HalfOpened) ? DevicePosture.HalfOpened : DevicePosture.Flat;
+        if (_fold is { } fold)
+            posture = fold.IsHalfOpened ? DevicePosture.HalfOpened : DevicePosture.Flat;
         else if (_hingeAngle is { } angle)
             posture = angle < 30 ? DevicePosture.Closed : DevicePosture.Unknown;
-        else if (_layout is null)
-            posture = DevicePosture.Unknown; // WindowManager hasn't reported yet.
         else
-            posture = DevicePosture.Closed; // A foldable with no fold in the window: the cover display.
+            posture = DevicePosture.Unknown; // No report yet, or no fold in the window and no sensor to tell why.
 
-        return new FoldState(true, posture, _hingeAngle, fold is null ? null : ToTopLevel(fold.Bounds), fold?.IsSeparating == true);
+        return new FoldState(true, posture, _hingeAngle, _fold is { } f ? ToTopLevel(f) : null, _fold?.IsSeparating == true);
     }
 
     // Window pixels to top-level DIPs.
-    private Rect? ToTopLevel(global::Android.Graphics.Rect? bounds)
+    private Rect ToTopLevel(FoldInfo fold)
     {
-        if (bounds is null)
-            return null;
-        var location = new int[2];
-        _view.GetLocationInWindow(location);
+        _view.GetLocationInWindow(_location);
         var scale = _topLevel.RenderScaling;
         return new Rect(
-            (bounds.Left - location[0]) / scale,
-            (bounds.Top - location[1]) / scale,
-            bounds.Width() / scale,
-            bounds.Height() / scale);
+            (fold.Left - _location[0]) / scale,
+            (fold.Top - _location[1]) / scale,
+            fold.Width / scale,
+            fold.Height / scale);
     }
 
     private static Activity? FindActivity(Context? context)
@@ -189,12 +208,10 @@ internal sealed class AndroidFoldStateProvider : JavaObject, IConsumer, ISensorE
         {
             _tracker.RemoveWindowLayoutInfoListener(this);
             _sensors?.UnregisterListener(this);
-            if (_lifetime is not null)
-            {
-                _lifetime.Activated -= OnActivated;
-                _lifetime.Deactivated -= OnDeactivated;
-            }
+            _activity.Application?.UnregisterActivityLifecycleCallbacks(this);
         }
         base.Dispose(disposing);
     }
+
+    private readonly record struct FoldInfo(int Left, int Top, int Width, int Height, bool IsHalfOpened, bool IsSeparating);
 }

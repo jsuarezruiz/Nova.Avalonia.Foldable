@@ -13,48 +13,49 @@ public static class Fold
     private static readonly ConditionalWeakTable<TopLevel, Registration> s_registrations = new();
 
     /// <summary>
-    /// Replaces the platform provider; return null to keep the default.
+    /// Creates the provider for each new top level; return null to keep the platform's default.
     /// </summary>
+    /// <remarks>The top level owns the provider and disposes it when it closes, so return a new instance each time.</remarks>
     public static Func<TopLevel, IFoldStateProvider?>? ProviderFactory { get; set; }
 
     /// <summary>
-    /// Tracks the fold of the control's top level (TwoPaneView does it for you).
+    /// Defines the IsEnabled attached property, which tracks the fold of the control's top level.
     /// </summary>
     public static readonly AttachedProperty<bool> IsEnabledProperty =
         AvaloniaProperty.RegisterAttached<Control, bool>("IsEnabled", typeof(Fold));
 
     /// <summary>
-    /// Defines the State attached property.
+    /// Defines the State attached property, read with <see cref="GetState"/>.
     /// </summary>
     public static readonly AttachedProperty<FoldState> StateProperty =
         AvaloniaProperty.RegisterAttached<StyledElement, FoldState>("State", typeof(Fold), FoldState.None, inherits: true);
 
     /// <summary>
-    /// Defines the Posture attached property.
+    /// Defines the Posture attached property, read with <see cref="GetPosture"/>.
     /// </summary>
     public static readonly AttachedProperty<DevicePosture> PostureProperty =
         AvaloniaProperty.RegisterAttached<StyledElement, DevicePosture>("Posture", typeof(Fold), inherits: true);
 
     /// <summary>
-    /// Defines the IsFoldable attached property.
+    /// Defines the IsFoldable attached property, read with <see cref="GetIsFoldable"/>.
     /// </summary>
     public static readonly AttachedProperty<bool> IsFoldableProperty =
         AvaloniaProperty.RegisterAttached<StyledElement, bool>("IsFoldable", typeof(Fold), inherits: true);
 
     /// <summary>
-    /// Defines the IsSeparating attached property.
+    /// Defines the IsSeparating attached property, read with <see cref="GetIsSeparating"/>.
     /// </summary>
     public static readonly AttachedProperty<bool> IsSeparatingProperty =
         AvaloniaProperty.RegisterAttached<StyledElement, bool>("IsSeparating", typeof(Fold), inherits: true);
 
     /// <summary>
-    /// Defines the FoldOrientation attached property.
+    /// Defines the FoldOrientation attached property, read with <see cref="GetFoldOrientation"/>.
     /// </summary>
     public static readonly AttachedProperty<FoldOrientation> FoldOrientationProperty =
         AvaloniaProperty.RegisterAttached<StyledElement, FoldOrientation>("FoldOrientation", typeof(Fold), inherits: true);
 
     /// <summary>
-    /// Defines the HingeAngle attached property.
+    /// Defines the HingeAngle attached property, read with <see cref="GetHingeAngle"/>.
     /// </summary>
     public static readonly AttachedProperty<double?> HingeAngleProperty =
         AvaloniaProperty.RegisterAttached<StyledElement, double?>("HingeAngle", typeof(Fold), inherits: true);
@@ -120,6 +121,7 @@ public static class Fold
     /// <summary>
     /// Sets the provider of <paramref name="topLevel"/>, disposing the old one.
     /// </summary>
+    /// <remarks>The top level owns the provider and disposes it when replaced or closed, so don't share one instance between top levels.</remarks>
     public static void SetProvider(TopLevel topLevel, IFoldStateProvider provider)
     {
         if (s_registrations.TryGetValue(topLevel, out var existing))
@@ -130,7 +132,10 @@ public static class Fold
             s_registrations.Remove(topLevel);
         }
 
-        s_registrations.Add(topLevel, new Registration(topLevel, provider));
+        // Registered before the first state goes out, so a handler that asks for the provider finds this one.
+        var registration = new Registration(topLevel, provider);
+        s_registrations.Add(topLevel, registration);
+        registration.Apply(provider.Current);
     }
 
     private static IFoldStateProvider? CreatePlatformProvider(TopLevel topLevel)
@@ -176,7 +181,7 @@ public static class Fold
             Provider.Changed += OnChanged;
             _topLevel.PropertyChanged += OnTopLevelPropertyChanged;
             _topLevel.Closed += OnTopLevelClosed;
-            Apply(Provider.Current);
+            _topLevel.ScalingChanged += OnScalingChanged;
         }
 
         public IFoldStateProvider Provider { get; }
@@ -186,6 +191,7 @@ public static class Fold
             Provider.Changed -= OnChanged;
             _topLevel.PropertyChanged -= OnTopLevelPropertyChanged;
             _topLevel.Closed -= OnTopLevelClosed;
+            _topLevel.ScalingChanged -= OnScalingChanged;
             Provider.Dispose();
         }
 
@@ -198,6 +204,9 @@ public static class Fold
 
         private void OnChanged(object? sender, FoldState state) => Apply(state);
 
+        // A density change rescales the fold, and it arrives after the resize that would have refreshed it.
+        private void OnScalingChanged(object? sender, EventArgs e) => Provider.Refresh();
+
         // Resizing or rotating moves the fold without a hinge change.
         private void OnTopLevelPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
@@ -205,7 +214,7 @@ public static class Fold
                 Provider.Refresh();
         }
 
-        private void Apply(FoldState state)
+        public void Apply(FoldState state)
         {
             _topLevel.SetValue(StateProperty, state);
             _topLevel.SetValue(PostureProperty, state.Posture);

@@ -3,9 +3,7 @@ using Avalonia;
 namespace Nova.Avalonia.Foldable.Showcase.Animation;
 
 /// <summary>
-/// Interpolates a rectangle by running the opposite corners of the diagonal that best supports the
-/// direction of travel along their own arcs. Port of Flutter's <c>MaterialRectArcTween</c>, the
-/// tween a <c>Hero</c> flight uses by default under a <c>MaterialApp</c>.
+/// Interpolates a rectangle by moving two opposite corners along arcs. Port of Flutter's <c>MaterialRectArcTween</c>.
 /// </summary>
 public sealed class MaterialRectArcTween
 {

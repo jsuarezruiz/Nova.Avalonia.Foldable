@@ -18,7 +18,7 @@ public sealed class SimulatedFoldStateProvider : IFoldStateProvider
     }
 
     /// <summary>
-    /// The simulated state. Setting a new value raises <see cref="Changed"/>.
+    /// Gets or sets the simulated state; setting a new value raises <see cref="Changed"/>.
     /// </summary>
     public FoldState Current
     {

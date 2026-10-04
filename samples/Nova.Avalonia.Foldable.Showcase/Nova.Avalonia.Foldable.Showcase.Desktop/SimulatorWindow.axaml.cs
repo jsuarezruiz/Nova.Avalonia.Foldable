@@ -45,8 +45,11 @@ public partial class SimulatorWindow : Window
     private Preset _preset = Presets[OpenIndex];
     private bool _rotated;
     private double? _hingeAngle;
+    private readonly TextBlock[] _readout = new TextBlock[6];
     private DateTime _playStarted;
     private bool _updatingSlider;
+    private Preset? _publishedPreset;
+    private Matrix? _publishedTransform;
 
     public SimulatorWindow() : this(new MainView())
     {
@@ -79,16 +82,20 @@ public partial class SimulatorWindow : Window
             button.Classes.Add("preset");
             // Screen readers would otherwise announce the content panel's type name.
             AutomationProperties.SetName(button, Presets[index].Title);
+            // A click, even on the posture already picked, takes over from "Open the device".
+            button.Click += (_, _) => _playTimer.Stop();
             button.IsCheckedChanged += (_, _) =>
             {
-                if (button.IsChecked != true)
-                    return;
-                // Picked by hand rather than by the hinge: that takes over from "Open the device".
-                if (_hingeAngle is null)
-                    _playTimer.Stop();
-                Apply(index);
+                if (button.IsChecked == true)
+                    Apply(index);
             };
             PresetList.Children.Add(button);
+        }
+
+        for (var i = 0; i < _readout.Length; i++)
+        {
+            _readout[i] = new TextBlock { Classes = { "readout" } };
+            Readout.Children.Add(_readout[i]);
         }
 
         AngleSlider.ValueChanged += (_, e) =>
@@ -166,6 +173,10 @@ public partial class SimulatorWindow : Window
     // 1 to 6 pick a posture; left and right move the hinge by 5°, or 1° with Shift.
     private void OnShortcut(object? sender, KeyEventArgs e)
     {
+        // Leave system shortcuts and text entry alone.
+        if ((e.KeyModifiers & ~KeyModifiers.Shift) != KeyModifiers.None || e.Source is TextBox)
+            return;
+
         var preset = e.Key switch
         {
             >= Key.D1 and <= Key.D6 => e.Key - Key.D1,
@@ -175,6 +186,7 @@ public partial class SimulatorWindow : Window
 
         if (preset >= 0)
         {
+            _playTimer.Stop();
             Check(preset);
             e.Handled = true;
             return;
@@ -199,6 +211,13 @@ public partial class SimulatorWindow : Window
     // Publishes the fold in window (top-level) coordinates, like the platform providers.
     private void Publish()
     {
+        // Runs after every layout pass; only the preset and the device's place in the window matter.
+        var toWindow = _view.TransformToVisual(this);
+        if (_preset == _publishedPreset && toWindow == _publishedTransform)
+            return;
+        _publishedPreset = _preset;
+        _publishedTransform = toWindow;
+
         // The iPhone Duo simulator reports the fold as a 40pt band, not a line.
         const double foldThickness = 40;
         var size = _preset.Screen;
@@ -211,7 +230,7 @@ public partial class SimulatorWindow : Window
         };
 
         // Through the view's transform, so the fold stays right when the device is scaled to fit.
-        var bounds = local is { } l && _view.TransformToVisual(this) is { } toWindow ? l.TransformToAABB(toWindow) : (Rect?)null;
+        var bounds = local is { } l && toWindow is { } transform ? l.TransformToAABB(transform) : (Rect?)null;
         var state = _preset.Foldable
             ? new FoldState(true, _preset.Posture, _preset.Angle, bounds, _preset.Posture == DevicePosture.HalfOpened)
             : FoldState.None;
@@ -233,25 +252,24 @@ public partial class SimulatorWindow : Window
 
         AngleText.Text = _preset.Foldable ? $"{_preset.Angle:0}°" : "–";
 
-        // Publishing runs after every layout pass, so only act on real changes.
-        if (state == _fold.Current && Readout.Children.Count > 0)
-            return;
-
         _fold.Current = state;
         UpdateReadout(state);
     }
 
     private void UpdateReadout(FoldState state)
     {
-        Readout.Children.Clear();
-        Add($"IsFoldable      {state.IsFoldable}");
-        Add($"Posture         {state.Posture}");
-        Add($"HingeAngle      {(state.HingeAngle is { } a ? $"{a:0}°" : "null")}");
-        Add($"IsSeparating    {state.IsSeparating}");
-        Add($"Orientation     {state.Orientation}");
-        Add($"FoldBounds      {(state.FoldBounds is { } f ? $"{f.X:0},{f.Y:0} {f.Width:0}×{f.Height:0}" : "null")}");
+        _readout[0].Text = $"IsFoldable      {state.IsFoldable}";
+        _readout[1].Text = $"Posture         {state.Posture}";
+        _readout[2].Text = $"HingeAngle      {(state.HingeAngle is { } a ? $"{a:0}°" : "null")}";
+        _readout[3].Text = $"IsSeparating    {state.IsSeparating}";
+        _readout[4].Text = $"Orientation     {state.Orientation}";
+        _readout[5].Text = $"FoldBounds      {(state.FoldBounds is { } f ? $"{f.X:0},{f.Y:0} {f.Width:0}×{f.Height:0}" : "null")}";
+    }
 
-        void Add(string text) => Readout.Children.Add(new TextBlock { Text = text, Classes = { "readout" } });
+    protected override void OnClosed(EventArgs e)
+    {
+        _playTimer.Stop();
+        base.OnClosed(e);
     }
 
     // "Open the device": a beat on the cover display, then the hinge swings open to flat.
