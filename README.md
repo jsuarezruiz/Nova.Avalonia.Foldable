@@ -10,6 +10,10 @@ On devices without a fold nothing changes: the library reports no fold and `TwoP
 
 *The Showcase app, "Guide To the Stars" from [Avalonia Vignettes](https://github.com/jsuarezruiz/avalonia_vignettes), on the iPhone Duo simulator.*
 
+## Documentation
+
+**[Read the Nova.Avalonia.Foldable documentation](https://jsuarezruiz.github.io/Nova.Avalonia.Foldable/)**: getting started, `TwoPaneView`, reading the fold, testing without a device, platform details and the API reference.
+
 ## Platform support
 
 | Platform | Fold source | Tested on |
@@ -67,7 +71,7 @@ public class MainActivity : AvaloniaMainActivity { }
 </UserControl>
 ```
 
-`TwoPaneView` has the same API as the WinUI and .NET MAUI control. When the device is half open, the panes sit on either side of the fold, or above and below it in tabletop posture. When it's flat, they split at the fold if there's room (`SnapToFold`, on by default). When it's closed or has no fold, the usual size rules apply (`MinWideModeWidth` and `MinTallModeHeight`, 641 by default), and `PanePriority` picks the pane to show when only one fits. The hidden pane keeps its state.
+`TwoPaneView` follows the WinUI and .NET MAUI `TwoPaneView` API. When the device is half open, the panes sit on either side of the fold, or above and below it in tabletop posture. When it's flat, they split at the fold if there's room (`SnapToFold`, on by default). When it's closed or has no fold, the usual size rules apply (`MinWideModeWidth` and `MinTallModeHeight`, 641 by default), and `PanePriority` picks the pane to show when only one fits. The hidden pane keeps its state.
 
 ### Reading the fold
 
