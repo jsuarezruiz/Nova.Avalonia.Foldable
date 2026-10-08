@@ -2,4 +2,10 @@
   <!-- In-repo apps reference the bindings as a project, so the package's buildTransitive targets aren't applied automatically. -->
   <Import Project="$(MSBuildThisFileDirectory)src/Nova.Avalonia.Foldable.Bindings.iOS/buildTransitive/Nova.Avalonia.Foldable.Bindings.iOS.targets"
           Condition="'$(OutputType)' == 'Exe' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'" />
+
+  <!-- SkiaSharp's native iOS assets target net10.0-ios26.2. With an older iOS workload the app builds, then fails to load libSkiaSharp at launch. -->
+  <Target Name="CheckIOSWorkloadVersion" BeforeTargets="BeforeBuild"
+          Condition="'$(OutputType)' == 'Exe' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' And $([MSBuild]::VersionLessThan('$(TargetPlatformVersion)', '26.2'))">
+    <Error Text="The installed .NET for iOS workload targets iOS $(TargetPlatformVersion); this app needs 26.2 or later. Update it with 'dotnet workload update'." />
+  </Target>
 </Project>
