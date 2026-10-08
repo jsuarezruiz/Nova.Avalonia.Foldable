@@ -1,7 +1,6 @@
 ---
 title: Getting started
 description: Add Nova.Avalonia.Foldable to an Avalonia app and show two panes around the fold.
-ms.date: 2026-09-27
 ---
 
 # Getting started
@@ -28,7 +27,7 @@ The library targets `net10.0`, `net10.0-ios` and `net10.0-android`. The shared p
 
 ## Prepare the iOS head
 
-Turn off the Xcode version check, since .NET for iOS still expects Xcode 26.2, and import the bindings' link settings:
+Turn off the Xcode version check, since the .NET for iOS workload expects an older Xcode than the 27.1 the iPhone Duo simulator needs, and import the bindings' link settings:
 
 ```xml
 <PropertyGroup>
@@ -54,24 +53,9 @@ public class MainActivity : AvaloniaMainActivity { }
 
 ## Show two panes
 
-Every public type lives in the `Nova.Avalonia.Foldable` namespace, so one XAML namespace covers everything:
+Every public type lives in the `Nova.Avalonia.Foldable` namespace, so one XAML namespace covers everything. Declare it and give a `TwoPaneView` a view for each pane, as in [Create a two-pane view](twopaneview.md#create-a-two-pane-view).
 
-```xml
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:fold="using:Nova.Avalonia.Foldable"
-             xmlns:local="using:MyApp.Views">
-  <fold:TwoPaneView>
-    <fold:TwoPaneView.Pane1>
-      <local:InboxView />
-    </fold:TwoPaneView.Pane1>
-    <fold:TwoPaneView.Pane2>
-      <local:MessageView />
-    </fold:TwoPaneView.Pane2>
-  </fold:TwoPaneView>
-</UserControl>
-```
-
-On a half-open device the inbox and the message sit on either side of the fold. On a regular phone only the inbox shows, and the message appears next to it once the window is wide enough. See [TwoPaneView](twopaneview.md) for the full set of rules.
+On a half-open device the two views sit on either side of the fold. On a regular phone the default size rules stack them, because most phones are taller than `MinTallModeHeight`; raise that value to show one pane there instead. See [TwoPaneView](twopaneview.md) for the full set of rules.
 
 ## Try it without a device
 

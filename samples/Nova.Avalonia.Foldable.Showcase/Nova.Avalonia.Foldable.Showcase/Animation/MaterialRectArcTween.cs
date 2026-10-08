@@ -21,7 +21,7 @@ public sealed class MaterialRectArcTween
     private readonly MaterialPointArcTween _endArc;
 
     /// <summary>
-    /// Initializes a new tween running from <paramref name="begin"/> to <paramref name="end"/>.
+    /// Creates a tween from <paramref name="begin"/> to <paramref name="end"/>.
     /// </summary>
     public MaterialRectArcTween(Rect begin, Rect end)
     {

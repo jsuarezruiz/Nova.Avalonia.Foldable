@@ -31,7 +31,7 @@ public sealed class ConstellationTitleCard : TemplatedControl
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether this entry is the red, outlined kind.
+    /// Gets or sets whether this entry is the red, outlined kind.
     /// </summary>
     public bool IsRedMode
     {

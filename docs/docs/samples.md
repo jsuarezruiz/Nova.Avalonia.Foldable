@@ -1,7 +1,6 @@
 ---
 title: Samples
 description: The two sample apps in the repository and how to run them.
-ms.date: 2026-09-27
 ---
 
 # Samples

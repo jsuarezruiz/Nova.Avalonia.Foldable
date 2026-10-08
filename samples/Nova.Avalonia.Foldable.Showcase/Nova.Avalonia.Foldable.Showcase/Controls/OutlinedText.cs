@@ -75,7 +75,7 @@ public sealed class OutlinedText : Control
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the text is stroked rather than filled.
+    /// Gets or sets whether the text is stroked rather than filled.
     /// </summary>
     public bool IsOutlined
     {

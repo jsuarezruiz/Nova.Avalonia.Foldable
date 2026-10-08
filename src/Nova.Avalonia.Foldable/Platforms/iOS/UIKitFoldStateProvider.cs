@@ -2,6 +2,7 @@ using System;
 using System.Runtime.Versioning;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using Nova.Avalonia.Foldable.Bindings.iOS;
 using ObjCRuntime;
 using UIKit;
@@ -15,8 +16,12 @@ namespace Nova.Avalonia.Foldable.Platforms.iOS;
 [UnsupportedOSPlatform("maccatalyst")]
 internal sealed class UIKitFoldStateProvider : IFoldStateProvider
 {
+    // How long after the last hinge update the fold is read once more.
+    private static readonly TimeSpan SettleDelay = TimeSpan.FromMilliseconds(250);
+
     private readonly UIView _view;
     private readonly UIHingeInteraction _interaction;
+    private readonly DispatcherTimer _settle = new() { Interval = SettleDelay };
     private UIHingeStatus? _hingeStatus;
     private double? _hingeAngle;
     private Rect? _foldBounds;
@@ -25,6 +30,7 @@ internal sealed class UIKitFoldStateProvider : IFoldStateProvider
     private UIKitFoldStateProvider(UIView view)
     {
         _view = view;
+        _settle.Tick += OnSettled;
         _interaction = new UIHingeInteraction(OnHingeUpdate);
         _view.AddInteraction(_interaction);
         ReadFold();
@@ -58,6 +64,7 @@ internal sealed class UIKitFoldStateProvider : IFoldStateProvider
 
     public void Dispose()
     {
+        _settle.Stop();
         _view.RemoveInteraction(_interaction);
         _interaction.Dispose();
     }
@@ -66,17 +73,21 @@ internal sealed class UIKitFoldStateProvider : IFoldStateProvider
     private void OnHingeUpdate(UIHingeInteraction interaction, UIHingeInteractionUpdate update)
     {
         var hinge = update.Hinge;
-        var status = hinge?.Status;
+        _hingeStatus = hinge?.Status;
         _hingeAngle = hinge is null ? null : hinge.Angle * 180.0 / Math.PI;
 
-        // The fold only moves with the status; most updates just move the angle.
-        if (status != _hingeStatus)
-        {
-            _hingeStatus = status;
-            ReadFold();
-        }
+        // The division region turns active or inactive on its own schedule, not with the hinge status:
+        // while the hinge travels, or just after its last update. Read it with every update, and once
+        // more when they stop.
+        Refresh();
+        _settle.Stop();
+        _settle.Start();
+    }
 
-        Publish();
+    private void OnSettled(object? sender, EventArgs e)
+    {
+        _settle.Stop();
+        Refresh();
     }
 
     private void Publish()

@@ -7,7 +7,7 @@
     <ApplicationTitle>Foldable Sample</ApplicationTitle>
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-    <!-- .NET for iOS 26.2 asks for Xcode 26.2; the iPhone Duo APIs need Xcode 27.1. -->
+    <!-- The .NET for iOS workload expects an older Xcode than the 27.1 the iPhone Duo simulator needs. -->
     <ValidateXcodeVersion>false</ValidateXcodeVersion>
   </PropertyGroup>
 

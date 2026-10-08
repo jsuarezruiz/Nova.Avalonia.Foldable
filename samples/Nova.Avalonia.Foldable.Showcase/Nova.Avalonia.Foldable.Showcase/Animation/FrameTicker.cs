@@ -17,7 +17,7 @@ public sealed class FrameTicker
     private bool _waitingForAttach;
 
     /// <summary>
-    /// Initializes a new ticker that invokes <paramref name="onTick"/> once per frame of <paramref name="owner"/>.
+    /// Creates a ticker that calls <paramref name="onTick"/> once per frame of <paramref name="owner"/>.
     /// </summary>
     public FrameTicker(Visual owner, Action<TimeSpan> onTick)
     {
@@ -26,7 +26,7 @@ public sealed class FrameTicker
     }
 
     /// <summary>
-    /// Gets a value indicating whether the ticker is currently requesting frames.
+    /// Gets whether the ticker is requesting frames.
     /// </summary>
     public bool IsRunning { get; private set; }
 

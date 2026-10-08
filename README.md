@@ -24,7 +24,7 @@ To browse the generated API reference, [build the documentation locally](CONTRIB
 | Android 6.0+ (API 23) | Jetpack WindowManager and the hinge angle sensor | Pixel Fold emulator |
 | Desktop, browser | None, reports no fold | |
 
-The iOS 27.1 APIs aren't in .NET for iOS yet. They're being added in [dotnet/macios#26705](https://github.com/dotnet/macios/pull/26705), and until that ships this repo includes [`Nova.Avalonia.Foldable.Bindings.iOS`](src/Nova.Avalonia.Foldable.Bindings.iOS), a copy of that PR's definitions. On iOS versions before 27.1 the app still runs and reports no fold. Android uses Microsoft's `Xamarin.AndroidX.Window` packages, so it needs no custom bindings.
+The iOS 27.1 APIs aren't in .NET for iOS yet, so this repo carries its own copy of the bindings in [`Nova.Avalonia.Foldable.Bindings.iOS`](src/Nova.Avalonia.Foldable.Bindings.iOS); [Platforms](docs/docs/platforms.md#the-temporary-bindings) explains where they come from and when they go away. On iOS versions before 27.1 the app still runs and reports no fold. Android uses Microsoft's `Xamarin.AndroidX.Window` packages, so it needs no custom bindings.
 
 ## Getting started
 
@@ -34,25 +34,7 @@ There's no NuGet package yet, so reference the project from your shared UI proje
 <ProjectReference Include="path/to/src/Nova.Avalonia.Foldable/Nova.Avalonia.Foldable.csproj" />
 ```
 
-In your iOS head, turn off the Xcode version check (.NET for iOS still expects Xcode 26.2) and import the bindings' link settings:
-
-```xml
-<PropertyGroup>
-  <ValidateXcodeVersion>false</ValidateXcodeVersion>
-</PropertyGroup>
-<Import Project="path/to/src/Nova.Avalonia.Foldable.Bindings.iOS/buildTransitive/Nova.Avalonia.Foldable.Bindings.iOS.targets" />
-```
-
-In your Android head, let the activity handle configuration changes so it isn't recreated when the device folds:
-
-```csharp
-[Activity(
-    MainLauncher = true,
-    ResizeableActivity = true,
-    ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode
-        | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
-public class MainActivity : AvaloniaMainActivity { }
-```
+The iOS and Android heads each need one small change before the fold is reported. [Getting started](docs/docs/getting-started.md) walks through both.
 
 ## Usage
 
@@ -141,7 +123,7 @@ dotnet run --project samples/Nova.Avalonia.Foldable.Showcase/Nova.Avalonia.Folda
 
 ## Limitations
 
-- The iOS bindings are temporary. Once .NET for iOS ships them, the library switches to the official types and apps don't need to change.
+- The iOS bindings are temporary; see [Platforms](docs/docs/platforms.md#the-temporary-bindings).
 - The hinge angle is only reported where the platform exposes it; on Android the device needs a hinge sensor.
 - Avalonia 12 pads the content for safe areas, such as the Duo's sensor edge. `TwoPaneView` accounts for it, but keep it in mind when you position things against `FoldBounds` yourself.
 

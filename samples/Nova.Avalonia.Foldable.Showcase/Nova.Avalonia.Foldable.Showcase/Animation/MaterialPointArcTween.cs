@@ -19,7 +19,7 @@ public sealed class MaterialPointArcTween
     private readonly bool _isArc;
 
     /// <summary>
-    /// Initializes a new arc running from <paramref name="begin"/> to <paramref name="end"/>.
+    /// Creates an arc from <paramref name="begin"/> to <paramref name="end"/>.
     /// </summary>
     public MaterialPointArcTween(Point begin, Point end)
     {

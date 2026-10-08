@@ -1,7 +1,6 @@
 ---
 title: Introduction
 description: The concepts behind Nova.Avalonia.Foldable and how its pieces fit together.
-ms.date: 2026-09-27
 ---
 
 # Introduction
@@ -26,6 +25,6 @@ All of these live in one snapshot, [FoldState](xref:Nova.Avalonia.Foldable.FoldS
 
 You rarely touch providers directly. `TwoPaneView` starts tracking the fold as soon as it is on screen, and `Fold.IsEnabled` does the same for any other control.
 
-## Based on dotnet/macios#26705
+## Platform APIs
 
-The iPhone Duo APIs are new in iOS 27.1, and .NET for iOS doesn't ship them yet. They are being added in [dotnet/macios#26705](https://github.com/dotnet/macios/pull/26705). Until that ships, the repository includes `Nova.Avalonia.Foldable.Bindings.iOS`, a copy of that PR's definitions. Once .NET for iOS includes them, the library switches to the official types and apps don't need to change. Android needs no custom bindings: it uses Microsoft's `Xamarin.AndroidX.Window` packages.
+The iPhone Duo APIs are new in iOS 27.1 and .NET for iOS doesn't ship them yet, so the repository carries a temporary copy of the bindings; [Platforms](platforms.md#the-temporary-bindings) explains where they come from and when they go away. Android needs no custom bindings: it uses Microsoft's `Xamarin.AndroidX.Window` packages.

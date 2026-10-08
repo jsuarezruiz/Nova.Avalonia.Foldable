@@ -1,7 +1,6 @@
 ---
 title: Welcome to Nova.Avalonia.Foldable
 description: Foldable device support for Avalonia on the iPhone Duo and Android foldables.
-ms.date: 2026-09-27
 ---
 
 # Welcome to Nova.Avalonia.Foldable

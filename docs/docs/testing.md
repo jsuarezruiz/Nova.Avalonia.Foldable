@@ -1,7 +1,6 @@
 ---
 title: Testing without a device
 description: Design and test fold-aware layouts on desktop, in the previewer and in headless tests.
-ms.date: 2026-09-27
 ---
 
 # Testing without a device

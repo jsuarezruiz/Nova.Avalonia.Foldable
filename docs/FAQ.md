@@ -27,15 +27,11 @@ Not yet. Reference the projects for now; packages are on the roadmap.
 
 ### Why does the repo contain iOS bindings?
 
-The iPhone Duo APIs (`UIHingeInteraction`, `UIHinge`, `-[UIView reservedRegionsOfKind:]`) are new in the iOS 27.1 SDK, and .NET for iOS doesn't include them yet. They are in [dotnet/macios#26705](https://github.com/dotnet/macios/pull/26705), which is still open, so no released workload includes them. `Nova.Avalonia.Foldable.Bindings.iOS` mirrors that PR's definitions so the APIs work today with the shipping iOS workload.
-
-### What happens when Microsoft ships the official bindings?
-
-The bindings project is deleted and the library switches to the official `UIKit` types. Type and member names were kept identical to the PR, so it's a namespace change inside the library. Apps don't change.
+The iPhone Duo APIs (`UIHingeInteraction`, `UIHinge`, `-[UIView reservedRegionsOfKind:]`) are new in the iOS 27.1 SDK, and .NET for iOS doesn't include them yet. [The temporary bindings](docs/platforms.md#the-temporary-bindings) explains where the copy in this repo comes from and what happens when the official ones ship.
 
 ### Why `ValidateXcodeVersion=false`?
 
-The current .NET for iOS release asks for Xcode 26.2, while the iPhone Duo simulator needs Xcode 27.1. The bindings are resolved at runtime and don't depend on the Xcode version; the samples build with Xcode 27.0 and 27.1.
+The .NET for iOS workload checks for the Xcode version it was built against, which is older than the Xcode 27.1 the iPhone Duo simulator needs. The bindings are resolved at runtime and don't depend on the Xcode version; the samples build with Xcode 27.0 and 27.1.
 
 ### I get `Undefined symbols: _OBJC_CLASS_$_UIHinge` when linking
 
@@ -56,6 +52,10 @@ That's Avalonia 12's automatic safe-area padding (`TopLevel.AutoSafeAreaPadding`
 ### I can't find an iPhone Duo simulator
 
 It depends on the simulator runtime you have installed. [The iPhone Duo simulator](docs/platforms.md#the-iphone-duo-simulator) lists what to install and where the posture buttons are.
+
+### The fold stopped being reported on the Duo simulator
+
+Shut the simulator down and boot it again. A session that has been running for a long time can stop reporting reserved regions (the fold and the camera housing) while the hinge still works.
 
 ### `simctl io screenshot` gives a black image on the Duo
 

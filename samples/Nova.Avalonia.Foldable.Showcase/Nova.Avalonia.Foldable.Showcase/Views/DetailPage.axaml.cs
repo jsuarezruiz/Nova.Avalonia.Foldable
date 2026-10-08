@@ -74,7 +74,7 @@ public partial class DetailPage : UserControl
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the title is the red, outlined kind.
+    /// Gets or sets whether the title is the red, outlined kind.
     /// </summary>
     public bool IsRedMode
     {
@@ -83,7 +83,7 @@ public partial class DetailPage : UserControl
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the return button is shown.
+    /// Gets or sets whether the return button is shown.
     /// </summary>
     public bool IsReturnVisible
     {

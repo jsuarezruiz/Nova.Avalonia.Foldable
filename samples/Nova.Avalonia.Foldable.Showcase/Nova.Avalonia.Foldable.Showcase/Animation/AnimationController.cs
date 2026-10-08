@@ -16,7 +16,7 @@ public sealed class AnimationController
     private int _direction;
 
     /// <summary>
-    /// Initializes a new controller on <paramref name="owner"/>'s clock that reports to <paramref name="onValueChanged"/>.
+    /// Creates a controller on <paramref name="owner"/>'s clock that reports to <paramref name="onValueChanged"/>.
     /// </summary>
     public AnimationController(Visual owner, Action<double> onValueChanged)
     {
@@ -35,7 +35,7 @@ public sealed class AnimationController
     public double Value { get; private set; }
 
     /// <summary>
-    /// Gets a value indicating whether the controller is currently running.
+    /// Gets whether the controller is running.
     /// </summary>
     public bool IsAnimating => _direction != 0;
 

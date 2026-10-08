@@ -1,7 +1,6 @@
 ---
 title: Reading the fold
 description: Read the posture, hinge angle and fold bounds from XAML and code.
-ms.date: 2026-09-27
 ---
 
 # Reading the fold

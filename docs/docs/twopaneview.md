@@ -1,7 +1,6 @@
 ---
 title: TwoPaneView
 description: A two-pane layout that splits at the fold on foldables and by size everywhere else.
-ms.date: 2026-09-27
 ---
 
 # TwoPaneView
