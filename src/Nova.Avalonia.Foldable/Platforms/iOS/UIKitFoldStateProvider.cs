@@ -65,8 +65,9 @@ internal sealed class UIKitFoldStateProvider : IFoldStateProvider
     // UIKit calls this on the main thread, with the initial state first.
     private void OnHingeUpdate(UIHingeInteraction interaction, UIHingeInteractionUpdate update)
     {
-        var status = update.Hinge?.Status;
-        _hingeAngle = update.Hinge is { } hinge ? hinge.Angle * 180.0 / Math.PI : null;
+        var hinge = update.Hinge;
+        var status = hinge?.Status;
+        _hingeAngle = hinge is null ? null : hinge.Angle * 180.0 / Math.PI;
 
         // The fold only moves with the status; most updates just move the angle.
         if (status != _hingeStatus)

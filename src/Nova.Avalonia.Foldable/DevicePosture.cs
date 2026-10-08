@@ -6,7 +6,8 @@ namespace Nova.Avalonia.Foldable;
 public enum DevicePosture
 {
     /// <summary>
-    /// The device doesn't fold, or the hinge hasn't reported yet.
+    /// The device doesn't fold, the hinge hasn't reported yet, or the platform can't tell,
+    /// as on Android when the window doesn't span the fold.
     /// </summary>
     Unknown,
 

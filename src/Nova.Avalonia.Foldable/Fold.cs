@@ -80,30 +80,33 @@ public static class Fold
     /// </summary>
     public static FoldState GetState(StyledElement element) => element.GetValue(StateProperty);
 
+    // The accessors below read the state rather than their own property, so they agree with it
+    // even inside a change handler that runs before every property has been updated.
+
     /// <summary>
     /// Gets the device posture inherited from the top level.
     /// </summary>
-    public static DevicePosture GetPosture(StyledElement element) => element.GetValue(PostureProperty);
+    public static DevicePosture GetPosture(StyledElement element) => GetState(element).Posture;
 
     /// <summary>
     /// Gets whether the device has a hinge.
     /// </summary>
-    public static bool GetIsFoldable(StyledElement element) => element.GetValue(IsFoldableProperty);
+    public static bool GetIsFoldable(StyledElement element) => GetState(element).IsFoldable;
 
     /// <summary>
     /// Gets whether the fold currently divides the content.
     /// </summary>
-    public static bool GetIsSeparating(StyledElement element) => element.GetValue(IsSeparatingProperty);
+    public static bool GetIsSeparating(StyledElement element) => GetState(element).IsSeparating;
 
     /// <summary>
     /// Gets the direction of the fold.
     /// </summary>
-    public static FoldOrientation GetFoldOrientation(StyledElement element) => element.GetValue(FoldOrientationProperty);
+    public static FoldOrientation GetFoldOrientation(StyledElement element) => GetState(element).Orientation;
 
     /// <summary>
     /// Gets the hinge angle in degrees, or null when unknown.
     /// </summary>
-    public static double? GetHingeAngle(StyledElement element) => element.GetValue(HingeAngleProperty);
+    public static double? GetHingeAngle(StyledElement element) => GetState(element).HingeAngle;
 
     /// <summary>
     /// Returns the provider for <paramref name="topLevel"/>, creating it on first use.
@@ -124,6 +127,8 @@ public static class Fold
     /// <remarks>The top level owns the provider and disposes it when replaced or closed, so don't share one instance between top levels.</remarks>
     public static void SetProvider(TopLevel topLevel, IFoldStateProvider provider)
     {
+        ArgumentNullException.ThrowIfNull(provider);
+
         if (s_registrations.TryGetValue(topLevel, out var existing))
         {
             if (ReferenceEquals(existing.Provider, provider))
@@ -141,9 +146,9 @@ public static class Fold
     private static IFoldStateProvider? CreatePlatformProvider(TopLevel topLevel)
     {
 #if IOS
-        if (OperatingSystem.IsMacCatalyst() || !OperatingSystem.IsIOSVersionAtLeast(27, 1))
+        if (!OperatingSystem.IsIOSVersionAtLeast(27, 1))
             return null;
-#pragma warning disable CA1416 // Guarded above; the analyzer doesn't narrow iOS vs Mac Catalyst here.
+#pragma warning disable CA1416 // The iOS build never loads on Mac Catalyst, which the analyzer can't tell.
         return Platforms.iOS.UIKitFoldStateProvider.TryCreate(topLevel);
 #pragma warning restore CA1416
 #elif ANDROID
@@ -204,7 +209,7 @@ public static class Fold
 
         private void OnChanged(object? sender, FoldState state) => Apply(state);
 
-        // A density change rescales the fold, and it arrives after the resize that would have refreshed it.
+        // A density change rescales the fold and arrives after the resize, so it gets its own refresh.
         private void OnScalingChanged(object? sender, EventArgs e) => Provider.Refresh();
 
         // Resizing or rotating moves the fold without a hinge change.
@@ -214,6 +219,7 @@ public static class Fold
                 Provider.Refresh();
         }
 
+        // State goes first: the Get accessors read it, so a handler on any of these properties sees the whole snapshot.
         public void Apply(FoldState state)
         {
             _topLevel.SetValue(StateProperty, state);
