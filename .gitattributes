@@ -1,0 +1,7 @@
+# Text files are stored and checked out with LF, matching .editorconfig.
+* text=auto eol=lf
+
+*.png binary
+*.gif binary
+*.mp4 binary
+*.ttf binary
