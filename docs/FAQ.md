@@ -55,7 +55,7 @@ That's Avalonia 12's automatic safe-area padding (`TopLevel.AutoSafeAreaPadding`
 
 ### I can't find an iPhone Duo simulator
 
-Install Xcode 27.1 and the **iOS 27.1** runtime. The iOS 27.2 beta 1 runtime lists the iPhone Duo (`iPhone19,4`) as unsupported. In Xcode 27 the Simulator app is replaced by **Device Hub**; the posture buttons are at the bottom of the device view.
+It depends on the simulator runtime you have installed. [The iPhone Duo simulator](docs/platforms.md#the-iphone-duo-simulator) lists what to install and where the posture buttons are.
 
 ### `simctl io screenshot` gives a black image on the Duo
 
@@ -81,13 +81,7 @@ Debug builds leave the assemblies out of the APK and deploy them from the IDE. I
 
 ### What's the best Android emulator for testing?
 
-The **Pixel Fold** profile on the **Android 14 (API 34)** image, with the GPU enabled. Before testing, give it a fold position:
-
-```bash
-adb shell settings put global display_features "fold-[1104,0,1104,1840]"
-```
-
-Then drive it with `adb emu posture 1|2|3` (closed, half open, open) and `adb emu sensor set hinge-angle0 <degrees>`.
+The **Pixel Fold** profile on the **Android 14 (API 34)** image. [The Pixel Fold emulator](docs/platforms.md#the-pixel-fold-emulator) has the setup and the commands that fold it.
 
 ### Why not the "7.6in Foldable" emulator profile?
 

@@ -77,6 +77,8 @@ Panes.ModeChanged += (_, _) =>
     BackButton.IsVisible = Panes.Mode == TwoPaneViewMode.SinglePane;
 ```
 
+`Mode` and `ModeChanged` update at the end of the layout pass, so the panes are already arranged when the event fires.
+
 ## Differences from WinUI and .NET MAUI
 
 - **Fold awareness**: the panes follow the fold reported by the platform, including the width of the fold itself.

@@ -70,6 +70,8 @@ protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs chang
 }
 ```
 
+`Fold.State` changes first, and `Fold.GetPosture` and the other `Get` methods read from it, so a handler on any of these properties sees the same snapshot.
+
 Or subscribe to the provider directly:
 
 ```csharp

@@ -6,13 +6,15 @@ Foldable device support for [Avalonia](https://avaloniaui.net). It tells your ap
 
 On devices without a fold nothing changes: the library reports no fold and `TwoPaneView` falls back to size-based layout, so the same app runs on phones, tablets, desktop and the web.
 
-<p align="center"><img src="images/iphone-duo-showcase.gif" width="672" alt="The Showcase spanning both screens of the iPhone Duo simulator" /></p>
+<p align="center"><img src="docs/images/iphone-duo-showcase.gif" width="672" alt="The Showcase spanning both screens of the iPhone Duo simulator" /></p>
 
 *The Showcase app, "Guide To the Stars" from [Avalonia Vignettes](https://github.com/jsuarezruiz/avalonia_vignettes), on the iPhone Duo simulator.*
 
 ## Documentation
 
-**[Read the Nova.Avalonia.Foldable documentation](https://jsuarezruiz.github.io/Nova.Avalonia.Foldable/)**: getting started, `TwoPaneView`, reading the fold, testing without a device, platform details and the API reference.
+**[Read the Nova.Avalonia.Foldable documentation](docs/docs/introduction.md)**: [getting started](docs/docs/getting-started.md), [`TwoPaneView`](docs/docs/twopaneview.md), [reading the fold](docs/docs/fold.md), [testing without a device](docs/docs/testing.md) and [platform details](docs/docs/platforms.md).
+
+To browse the generated API reference, [build the documentation locally](CONTRIBUTING.md#setting-up).
 
 ## Platform support
 
@@ -135,17 +137,7 @@ dotnet run --project samples/Nova.Avalonia.Foldable.Showcase/Nova.Avalonia.Folda
 
 ## Testing on simulators and emulators
 
-**iPhone Duo:** install Xcode 27.1 with the iOS 27.1 simulator runtime (the iOS 27.2 beta 1 runtime doesn't support the Duo), then run an iOS head on the iPhone Duo simulator. Change postures with the buttons in Device Hub.
-
-**Pixel Fold:** create a Pixel Fold emulator on the Android 14 (API 34) image with the GPU enabled, and give it a fold position, since the image doesn't define one:
-
-```bash
-adb shell settings put global display_features "fold-[1104,0,1104,1840]"
-```
-
-Then fold it with `adb emu posture 1|2|3` (closed, half open, open) and move the hinge with `adb emu sensor set hinge-angle0 <degrees>`.
-
-The [FAQ](docs/FAQ.md) covers emulator quirks and other common problems.
+[Platforms](docs/docs/platforms.md) explains how to set up the [iPhone Duo simulator](docs/docs/platforms.md#the-iphone-duo-simulator) and the [Pixel Fold emulator](docs/docs/platforms.md#the-pixel-fold-emulator), and how to change postures on each. The [FAQ](docs/FAQ.md) covers emulator quirks and other common problems.
 
 ## Limitations
 

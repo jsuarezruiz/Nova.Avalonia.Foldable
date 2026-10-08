@@ -12,7 +12,7 @@ Thanks for helping. Bug reports, device reports, docs and code are all welcome.
 
 Requirements:
 
-- .NET 10 SDK (or later) with the `ios` and `android` workloads
+- .NET 10 SDK with the `ios` and `android` workloads (the iOS workload must be 26.2 or later)
 - Xcode for iOS work (Xcode 27.1 for the iPhone Duo simulator)
 - The Android SDK and an emulator for Android work
 
@@ -33,7 +33,7 @@ To preview the documentation site, restore the pinned DocFX (`dotnet tool restor
 dotnet docfx docs/docfx.json --serve
 ```
 
-The README's [Testing on simulators and emulators](README.md#testing-on-simulators-and-emulators) section explains how to run the samples on the iPhone Duo simulator and the Pixel Fold emulator.
+[Platforms](docs/docs/platforms.md) explains how to run the samples on the iPhone Duo simulator and the Pixel Fold emulator.
 
 ## Making changes
 

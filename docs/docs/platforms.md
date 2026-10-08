@@ -6,7 +6,7 @@ ms.date: 2026-09-27
 
 # Platforms
 
-Each platform has its own provider, picked automatically by target framework. Your code only sees [FoldState](xref:Nova.Avalonia.Foldable.FoldState).
+Each platform has its own provider, picked automatically by target framework. Your code only sees [FoldState](xref:Nova.Avalonia.Foldable.FoldState). So far the providers have been tested on the iPhone Duo simulator and the Pixel Fold emulator.
 
 ## iOS
 
@@ -23,13 +23,13 @@ The iOS 27.1 APIs come from `Nova.Avalonia.Foldable.Bindings.iOS`, a copy of the
 
 ### The iPhone Duo simulator
 
-1. Install **Xcode 27.1** with the **iOS 27.1** simulator runtime. The iOS 27.2 beta 1 runtime lists the iPhone Duo as unsupported.
+1. Install **Xcode 27.1** with the **iOS 27.1** simulator runtime. The iOS 27.2 beta 1 runtime lists the iPhone Duo (`iPhone19,4`) as unsupported.
 2. Build an iOS head with the selected Xcode; the samples build with Xcode 27.0 and 27.1. Set `MD_APPLE_SDK_ROOT` to use another Xcode.
 3. Run it on the **iPhone Duo** simulator, and change postures with the buttons at the bottom of **Device Hub**, which replaces the Simulator app in Xcode 27.
 
 ## Android
 
-The Android provider listens to Jetpack WindowManager through Microsoft's `WindowInfoTrackerCallbackAdapter` and maps the window's `FoldingFeature`:
+The Android provider runs on Android 6.0 (API 23) and later. It listens to Jetpack WindowManager through Microsoft's `WindowInfoTrackerCallbackAdapter` and maps the window's `FoldingFeature`:
 
 - `HALF_OPENED` becomes `HalfOpened`, and `FLAT` becomes `Flat`.
 - The bounds are converted from window pixels to top-level DIPs.

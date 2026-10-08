@@ -6,9 +6,7 @@ ms.date: 2026-09-27
 
 # Welcome to Nova.Avalonia.Foldable
 
-**Nova.Avalonia.Foldable** adds foldable device support to [Avalonia](https://avaloniaui.net). It tells your app how the device is folded (posture, hinge angle and where the fold is) on the iPhone Duo and Android foldables, and includes a `TwoPaneView` that places your content on either side of the fold.
-
-On devices without a fold nothing changes: the library reports no fold and `TwoPaneView` falls back to size-based layout, so the same app runs on phones, tablets, desktop and the web.
+**Nova.Avalonia.Foldable** adds foldable device support to [Avalonia](https://avaloniaui.net): it reports how the device is folded and lays out your content around the fold.
 
 <p align="center"><img src="images/iphone-duo-showcase.gif" width="672" alt="The Showcase spanning both screens of the iPhone Duo simulator" /></p>
 
@@ -20,13 +18,7 @@ On devices without a fold nothing changes: the library reports no fold and `TwoP
 
 ## Platforms
 
-| Platform | Fold source | Tested on |
-| --- | --- | --- |
-| iOS 27.1+ | `UIHingeInteraction` and the view's division region | iPhone Duo simulator |
-| Android 6.0+ (API 23) | Jetpack WindowManager and the hinge angle sensor | Pixel Fold emulator |
-| Desktop, browser | None, reports no fold | |
-
-See [Platforms](docs/platforms.md) for how each one works and how to set up the simulator and emulator.
+The fold is read on the iPhone Duo and on Android foldables. Everywhere else the library reports no fold, and the same app runs unchanged. See [Platforms](docs/platforms.md) for how each one works and how to set up the simulator and emulator.
 
 ## Requirements
 

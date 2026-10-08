@@ -10,7 +10,7 @@ A foldable has a hinge, and the hinge changes what a good layout looks like. Hel
 
 ## Concepts
 
-- **Posture**: how the device is folded. [DevicePosture](xref:Nova.Avalonia.Foldable.DevicePosture) is `Closed`, `HalfOpened` (book or tabletop) or `Flat`, and `Unknown` until the hinge reports.
+- **Posture**: how the device is folded. [DevicePosture](xref:Nova.Avalonia.Foldable.DevicePosture) is `Closed`, `HalfOpened` (book or tabletop) or `Flat`, and `Unknown` until the hinge reports or when the platform can't tell.
 - **Hinge angle**: degrees from 0 (closed) to 180 (flat), where the platform exposes it. Use it for effects, never for layout: not every device reports it.
 - **Fold bounds**: the fold as a rectangle in the coordinates of the top level. On the iPhone Duo it is a 40pt band; on Android it can be a thin line.
 - **Separating**: whether the fold currently divides the content, as it does while the device is half open.
