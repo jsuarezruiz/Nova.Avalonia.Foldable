@@ -1,8 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:models="using:Nova.Avalonia.Foldable.Showcase.Models"
              x:Class="Nova.Avalonia.Foldable.Showcase.Views.ListPage"
-             x:DataType="models:Constellation"
              ClipToBounds="True">
 
   <UserControl.Styles>

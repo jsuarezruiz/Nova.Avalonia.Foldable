@@ -11,7 +11,7 @@ namespace Nova.Avalonia.Foldable.Showcase.Views;
 /// <summary>
 /// The scrolling guide. Port of <c>constellation_list_view.dart</c> and <c>constellation_list_renderer.dart</c>.
 /// </summary>
-/// <remarks>Indents come from a seeded generator so the layout is stable.</remarks>
+/// <remarks>Indents are the original's seeded random sequence, kept as a table so the layout is stable.</remarks>
 public partial class ListPage : UserControl
 {
     private const double EdgeNudge = 25d;
@@ -41,14 +41,14 @@ public partial class ListPage : UserControl
 
     private void Build()
     {
-        // Dart's Random(1).nextInt(4) * 20 sequence; System.Random(1) produces a different one.
+        // As in the original: 20 for the first entry, then Dart's Random(1).nextInt(4) * 20 sequence.
+        // System.Random(1) produces a different one, so the values are listed.
         double[] indents = [20, 0, 60, 60, 60, 60, 20, 0, 20, 0, 20, 40, 60, 20, 0];
 
         for (var index = 0; index < DemoData.Constellations.Count; index++)
         {
             var isRedMode = index % 2 == 1;
 
-            // The design asked for the first entry to be left alone and the rest to vary.
             var indent = indents[index % indents.Length];
 
             var card = new ConstellationTitleCard

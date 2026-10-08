@@ -241,7 +241,7 @@ public partial class MainView : UserControl
 
         if (IsSinglePane)
         {
-            // An interrupted fade would leave the other pane half transparent, which shows once both panes are visible.
+            // One pane fades at a time; a fade this one interrupts ends at full opacity.
             if (_fadingPane is { } previous)
                 previous.Opacity = 1d;
 
@@ -293,7 +293,7 @@ public partial class MainView : UserControl
             return;
         }
 
-        // A flight still in the air would otherwise leave its cards hidden for good.
+        // Land any flight still in the air, which shows its cards again.
         _cardFlight.Stop();
         EndCardFlight();
 

@@ -51,7 +51,7 @@ public sealed class FrameTicker
     /// </summary>
     public void Stop() => IsRunning = false;
 
-    // Guards against a restart inside the tick requesting a second frame, which would tick twice per frame.
+    // At most one frame is pending at a time; a restart from inside the tick reuses it.
     private void RequestFrame()
     {
         if (_framePending)
@@ -79,7 +79,7 @@ public sealed class FrameTicker
 
         if (IsRunning)
         {
-            // Measure from the resume, so the time spent detached doesn't jump the animation ahead.
+            // Measure from the resume; the time spent detached doesn't count.
             _hasStartTime = false;
             RequestFrame();
         }

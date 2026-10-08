@@ -28,7 +28,7 @@ public sealed class StarField : Control
 
     private const double GlowingShare = 0.1d;
 
-    // Shared: respawning stars would otherwise allocate a brush each, many per frame at warp speed.
+    // One brush for every glowing star; many respawn per frame at warp speed.
     private static readonly IBrush GlowBrush = new ImmutableSolidColorBrush(Color.FromRgb(0xD4, 0xA1, 0xFF));
 
     private readonly Random _random = new();
@@ -130,7 +130,7 @@ public sealed class StarField : Control
     }
 
     // Moves every star toward the viewer by Speed. Stars that arrive respawn at the far end;
-    // stars pushed past the far end wrap to the front, so a negative speed doesn't empty the field.
+    // stars pushed past the far end wrap to the front, which keeps the field full at negative speeds.
     private void Advance()
     {
         foreach (var star in _stars)

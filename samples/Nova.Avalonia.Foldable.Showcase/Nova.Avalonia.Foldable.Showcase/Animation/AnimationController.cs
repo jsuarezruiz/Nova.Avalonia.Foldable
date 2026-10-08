@@ -88,7 +88,7 @@ public sealed class AnimationController
 
     private void OnTick(TimeSpan elapsed)
     {
-        // A restarted ticker reports elapsed from zero, so floor the step to avoid a backward frame.
+        // A restarted ticker reports elapsed from zero, so the step is floored at zero.
         var step = _hasLastElapsed ? Math.Max(0d, (elapsed - _lastElapsed).TotalSeconds) : 0d;
 
         _lastElapsed = elapsed;
@@ -99,7 +99,7 @@ public sealed class AnimationController
 
         Value = Math.Clamp(Value + (_direction * rate), 0d, 1d);
 
-        // Only the target bound ends the run; a forward run starts at 0 and would stop on its first frame.
+        // Only the target bound ends the run; a run can start at the other one.
         if (Value == target)
         {
             Stop();

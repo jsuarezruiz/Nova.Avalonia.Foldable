@@ -33,7 +33,7 @@ public sealed class IntervalEasing : Easing
     {
         var t = Math.Clamp((progress - Begin) / (End - Begin), 0d, 1d);
 
-        // Return the ends untouched so a curve that misses 0 or 1 can't cause a jump.
+        // The ends are exact, even for a curve that misses 0 or 1.
         return t is 0d or 1d ? t : Curve?.Ease(t) ?? t;
     }
 }

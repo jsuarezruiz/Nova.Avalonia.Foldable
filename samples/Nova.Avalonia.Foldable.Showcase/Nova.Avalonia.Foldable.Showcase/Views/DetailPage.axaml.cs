@@ -122,19 +122,7 @@ public partial class DetailPage : UserControl
         _reveal.Duration = duration;
         _reveal.SetValue(0d);
 
-        // The clock needs the top level's frames, so wait until the page is on screen.
-        if (TopLevel.GetTopLevel(this) is null)
-        {
-            AttachedToVisualTree += StartWhenAttached;
-            return;
-        }
-
-        _reveal.Forward();
-    }
-
-    private void StartWhenAttached(object? sender, VisualTreeAttachmentEventArgs e)
-    {
-        AttachedToVisualTree -= StartWhenAttached;
+        // The clock needs the top level's frames; off screen, the ticker waits until the page is attached.
         _reveal.Forward();
     }
 

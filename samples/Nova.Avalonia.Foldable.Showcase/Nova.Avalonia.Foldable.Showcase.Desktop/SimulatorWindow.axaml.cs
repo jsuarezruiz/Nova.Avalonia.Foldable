@@ -80,7 +80,7 @@ public partial class SimulatorWindow : Window
                 },
             };
             button.Classes.Add("preset");
-            // Screen readers would otherwise announce the content panel's type name.
+            // The content is a panel, so screen readers get the title to announce.
             AutomationProperties.SetName(button, Presets[index].Title);
             // A click, even on the posture already picked, takes over from "Open the device".
             button.Click += (_, _) => _playTimer.Stop();
