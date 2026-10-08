@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace Nova.Avalonia.Foldable;
 
@@ -77,8 +80,12 @@ public class TwoPaneView : Control
     public static readonly DirectProperty<TwoPaneView, TwoPaneViewMode> ModeProperty =
         AvaloniaProperty.RegisterDirect<TwoPaneView, TwoPaneViewMode>(nameof(Mode), o => o.Mode);
 
+    private readonly List<Visual> _transformSources = [];
     private TwoPaneViewMode _mode;
+    private TwoPaneViewMode _arrangedMode;
     private Matrix _fromTopLevel = Matrix.Identity;
+    private Matrix? _settlingFromTopLevel;
+    private bool _isSettling;
     private TopLevel? _topLevel;
 
     static TwoPaneView()
@@ -183,6 +190,7 @@ public class TwoPaneView : Control
     /// <summary>
     /// Gets how the panes are currently shown.
     /// </summary>
+    /// <remarks>Updated after the panes have been arranged, normally when the layout pass ends.</remarks>
     public TwoPaneViewMode Mode
     {
         get => _mode;
@@ -196,6 +204,7 @@ public class TwoPaneView : Control
     /// <summary>
     /// Occurs when <see cref="Mode"/> changes.
     /// </summary>
+    /// <remarks>Raised after the panes have been arranged in the new mode, normally when the layout pass ends.</remarks>
     public event EventHandler? ModeChanged;
 
     /// <inheritdoc/>
@@ -237,6 +246,15 @@ public class TwoPaneView : Control
         if (_topLevel is not null)
             Fold.GetProvider(_topLevel);
         LayoutUpdated += OnLayoutUpdated;
+
+        // A render transform moves the view without a layout pass; watch this one and every one above it.
+        for (Visual? visual = this; visual is not null && visual != _topLevel; visual = visual.GetVisualParent())
+        {
+            visual.PropertyChanged += OnTransformSourcePropertyChanged;
+            if (visual.RenderTransform is IMutableTransform transform)
+                transform.Changed += OnRenderTransformChanged;
+            _transformSources.Add(visual);
+        }
     }
 
     /// <inheritdoc/>
@@ -244,21 +262,87 @@ public class TwoPaneView : Control
     {
         base.OnDetachedFromVisualTree(e);
         LayoutUpdated -= OnLayoutUpdated;
+        foreach (var visual in _transformSources)
+        {
+            visual.PropertyChanged -= OnTransformSourcePropertyChanged;
+            if (visual.RenderTransform is IMutableTransform transform)
+                transform.Changed -= OnRenderTransformChanged;
+        }
+        _transformSources.Clear();
+        _settlingFromTopLevel = null;
+        _isSettling = false;
         _topLevel = null;
         _fromTopLevel = Matrix.Identity;
     }
 
-    // The fold is reported in top-level coordinates; track where this view sits (and any scaling)
-    // so it can be mapped into local coordinates on the next layout pass.
+    private void OnTransformSourcePropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == RenderTransformProperty)
+        {
+            if (e.OldValue is IMutableTransform oldTransform)
+                oldTransform.Changed -= OnRenderTransformChanged;
+            if (e.NewValue is IMutableTransform newTransform)
+                newTransform.Changed += OnRenderTransformChanged;
+            WaitForTransformToSettle();
+        }
+        else if (e.Property == RenderTransformOriginProperty)
+        {
+            WaitForTransformToSettle();
+        }
+    }
+
+    private void OnRenderTransformChanged(object? sender, EventArgs e) => WaitForTransformToSettle();
+
+    // An animated transform changes every frame, and mapping the fold each time would lay the panes out
+    // again on every one of them. The fold is mapped once the transform has held still for a frame;
+    // a layout pass in the meantime still picks up where the view is (see OnLayoutUpdated).
+    // Without a fold there is nothing to map, and nothing to wait for.
+    private void WaitForTransformToSettle()
+    {
+        if (_isSettling || _topLevel is null || GetValue(Fold.StateProperty).FoldBounds is null)
+            return;
+        _isSettling = true;
+        _topLevel.RequestAnimationFrame(OnTransformFrame);
+    }
+
+    private void OnTransformFrame(TimeSpan time)
+    {
+        _isSettling = false;
+        if (_topLevel?.TransformToVisual(this) is not { } transform)
+            return;
+
+        if (transform == _settlingFromTopLevel)
+        {
+            _settlingFromTopLevel = null;
+            UpdateFoldMapping();
+        }
+        else
+        {
+            _settlingFromTopLevel = transform;
+            WaitForTransformToSettle();
+        }
+    }
+
+    // Mode is published once the fold mapping has settled and the panes are arranged.
     private void OnLayoutUpdated(object? sender, EventArgs e)
     {
+        if (!UpdateFoldMapping() && IsMeasureValid && IsArrangeValid)
+            Mode = _arrangedMode;
+    }
+
+    // The fold is reported in top-level coordinates; track where this view sits (and any scaling)
+    // so it can be mapped into local coordinates on the next layout pass. Returns whether one was requested.
+    private bool UpdateFoldMapping()
+    {
         if (_topLevel?.TransformToVisual(this) is not { } transform || transform == _fromTopLevel)
-            return;
+            return false;
         _fromTopLevel = transform;
 
         // Without a fold the position doesn't matter; skip the extra pass while scrolling or animating.
-        if (GetValue(Fold.StateProperty).FoldBounds is not null)
-            InvalidateMeasure();
+        if (GetValue(Fold.StateProperty).FoldBounds is null)
+            return false;
+        InvalidateMeasure();
+        return true;
     }
 
     /// <inheritdoc/>
@@ -291,15 +375,19 @@ public class TwoPaneView : Control
     /// <inheritdoc/>
     protected override Size ArrangeOverride(Size finalSize)
     {
-        // Mode follows the arranged layout only, so ModeChanged fires at most once per layout pass.
         var layout = ComputeLayout(finalSize);
         UpdateVisualChildren(layout);
-        Mode = layout.Mode;
 
         if (layout.Pane1 is { } r1)
             Pane1?.Arrange(r1);
         if (layout.Pane2 is { } r2)
             Pane2?.Arrange(r2);
+
+        // Mode follows the arranged layout only, published when the layout pass ends (see OnLayoutUpdated).
+        // Outside a top level there is no fold to map, so it is published right away.
+        _arrangedMode = layout.Mode;
+        if (_topLevel is null)
+            Mode = _arrangedMode;
 
         return finalSize;
     }
