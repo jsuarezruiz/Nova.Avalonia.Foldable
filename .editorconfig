@@ -17,3 +17,10 @@ trim_trailing_whitespace = false
 [*.cs]
 csharp_style_namespace_declarations = file_scoped:suggestion
 dotnet_sort_system_directives_first = true
+
+# The bindings mirror dotnet/macios and keep its style (tabs, block-scoped namespaces, a space
+# before parentheses), so formatters leave them alone.
+[src/Nova.Avalonia.Foldable.Bindings.iOS/**.cs]
+indent_style = tab
+csharp_style_namespace_declarations = block_scoped:suggestion
+generated_code = true

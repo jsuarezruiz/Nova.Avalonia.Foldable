@@ -23,6 +23,9 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Check formatting
+        run: dotnet format whitespace --folder --verify-no-changes
+
       - name: Test
         run: dotnet test tests/Nova.Avalonia.Foldable.Tests --configuration Release
 
