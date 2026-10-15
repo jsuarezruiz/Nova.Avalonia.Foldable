@@ -31,11 +31,11 @@ The iPhone Duo APIs (`UIHingeInteraction`, `UIHinge`, `-[UIView reservedRegionsO
 
 ### Why `ValidateXcodeVersion=false`?
 
-The .NET for iOS workload checks for the Xcode version it was built against, which is older than the Xcode 27.1 the iPhone Duo simulator needs. The bindings are resolved at runtime and don't depend on the Xcode version; the samples build with Xcode 27.0 and 27.1.
+The .NET for iOS workload checks for the Xcode version it was built against, which is older than the Xcode 27.1 the iPhone Duo simulator needs. The bindings are resolved at runtime and don't depend on the Xcode version; the samples build with Xcode 27.0 and 27.1. The samples turn the check off in `samples/Shared/iOS/iOSApp.props`; build with `-p:ValidateXcodeVersion=true` to keep it.
 
 ### I get `Undefined symbols: _OBJC_CLASS_$_UIHinge` when linking
 
-You're building against an SDK older than 27.1 without the bindings' `buildTransitive` targets. A future NuGet package will apply them automatically; with project references, import `Nova.Avalonia.Foldable.Bindings.iOS.targets` in your iOS head (see the README).
+You're building against an SDK older than 27.1 without the bindings' `buildTransitive` targets. A future NuGet package will apply them automatically; with project references, import `Nova.Avalonia.Foldable.Bindings.iOS.targets` in your iOS head, as [Prepare the iOS head](docs/getting-started.md#prepare-the-ios-head) shows.
 
 ### Does the app still run on iOS versions before 27.1?
 
@@ -43,7 +43,7 @@ Yes. The new classes are resolved at runtime; on older iOS the provider reports 
 
 ### The fold is 40pt wide. Is that right?
 
-Yes. The iPhone Duo reports the fold as a 40pt band (`x=455.5 w=40` on the 951×669 inner display). `TwoPaneView` keeps both panes out of it.
+Yes, that's how the iPhone Duo reports its fold; [Platforms](docs/platforms.md#ios) has the numbers. `TwoPaneView` keeps both panes out of it.
 
 ### My content is smaller than the display on the Duo
 
@@ -103,12 +103,12 @@ The Pixel Fold has two displays. Pass one: `adb shell dumpsys SurfaceFlinger --d
 
 ### Why does my second pane disappear on one screen?
 
-In single-pane mode the pane that isn't shown leaves the visual tree, but stays a logical child, so its state survives until the device unfolds again. Use `PanePriority` to choose which one is shown.
+In single-pane mode the pane that isn't shown is hidden, as WinUI collapses it. It stays in the visual tree with its state and comes back as it was when the device unfolds. Use `PanePriority` to choose which one is shown.
 
-### Animations don't start in a pane that was hidden
+### A `TransitioningContentControl` shows nothing after it comes back
 
-Anything that ticks off the top level's frames (`TopLevel.RequestAnimationFrame`) can't start while its control is out of the visual tree. Start it after the pane is shown, or on `AttachedToVisualTree`. The Showcase hit this with a cross-fade (`TransitioningContentControl`) and skips the transition when the pane is hidden.
+That's an Avalonia issue (12.1.2 to 12.1.4): after a `CrossFade`, a `TransitioningContentControl` that is removed from the visual tree and added back can show its content in the presenter it faded out, which is still transparent. `TwoPaneView` only hides a pane, so its panes aren't affected. If your app removes such a control itself, hide it with `IsVisible` instead, or use a transition that doesn't leave the faded-out page transparent.
 
 ### Can I use the hinge angle for layout?
 
-Please don't. The angle changes continuously while the device folds, and not every Android foldable exposes it. Use `Posture`, `IsSeparating` and `FoldBounds` for layout.
+Please don't: not every Android foldable exposes it. [Hinge angle](docs/fold.md#hinge-angle) has what to use instead.

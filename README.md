@@ -6,7 +6,7 @@ Foldable device support for [Avalonia](https://avaloniaui.net). It tells your ap
 
 On devices without a fold nothing changes: the library reports no fold and `TwoPaneView` falls back to size-based layout, so the same app runs on phones, tablets, desktop and the web.
 
-<p align="center"><img src="docs/images/iphone-duo-showcase.gif" width="672" alt="The Showcase spanning both screens of the iPhone Duo simulator" /></p>
+<p align="center"><img src="images/iphone-duo-showcase.gif" width="672" alt="The Showcase spanning both screens of the iPhone Duo simulator" /></p>
 
 *The Showcase app, "Guide To the Stars" from [Avalonia Vignettes](https://github.com/jsuarezruiz/avalonia_vignettes), on the iPhone Duo simulator.*
 
@@ -55,11 +55,11 @@ The iOS and Android heads each need one small change before the fold is reported
 </UserControl>
 ```
 
-`TwoPaneView` follows the WinUI and .NET MAUI `TwoPaneView` API. When the device is half open, the panes sit on either side of the fold, or above and below it in tabletop posture. When it's flat, they split at the fold if there's room (`SnapToFold`, on by default). When it's closed or has no fold, the usual size rules apply (`MinWideModeWidth` and `MinTallModeHeight`, 641 by default), and `PanePriority` picks the pane to show when only one fits. The hidden pane keeps its state.
+`TwoPaneView` follows the WinUI and .NET MAUI `TwoPaneView` API. When the fold divides the screen, as on a half-open device, the panes sit on either side of it, or above and below it in tabletop posture. When it's flat, they split at the fold if there's room (`SnapToFold`, on by default). When it's closed or has no fold, the usual size rules apply (`MinWideModeWidth` and `MinTallModeHeight`, 641 by default), and `PanePriority` picks the pane to show when only one fits. The hidden pane keeps its state.
 
 ### Reading the fold
 
-`TwoPaneView` tracks the fold on its own. Anywhere else, set `Fold.IsEnabled` near the root. Every control below it then inherits the fold through attached properties: `Fold.State`, `Posture` (`Unknown`, `Closed`, `HalfOpened` or `Flat`), `HingeAngle`, `IsSeparating`, `FoldOrientation` and `IsFoldable`.
+`TwoPaneView` tracks the fold on its own. Anywhere else, set `Fold.IsEnabled` near the root. Every control below it then inherits the fold through attached properties: `Fold.State`, `Posture` (`Unknown`, `Closed`, `HalfOpened` or `Flat`), `HingeAngle`, `IsSeparating`, `Orientation` and `IsFoldable`.
 
 ```xml
 <UserControl xmlns:fold="using:Nova.Avalonia.Foldable"
@@ -86,8 +86,6 @@ protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs chang
 }
 ```
 
-Use the hinge angle for effects only. Not every device reports it, so base layout on the posture and the fold bounds.
-
 ### Without a foldable
 
 A `SimulatedFoldStateProvider` lets you design and test fold layouts on desktop, in the previewer and in headless tests:
@@ -106,7 +104,7 @@ fold.Current = new FoldState(
 
 The Showcase's desktop app wraps it in a simulator panel:
 
-<p align="center"><img src="docs/images/desktop-simulator.png" width="720" alt="Showcase with the desktop foldable simulator" /></p>
+<p align="center"><img src="images/desktop-simulator.png" width="720" alt="Showcase with the desktop foldable simulator" /></p>
 
 ## Samples
 

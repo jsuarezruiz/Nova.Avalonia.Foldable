@@ -7,7 +7,7 @@ description: Foldable device support for Avalonia on the iPhone Duo and Android 
 
 **Nova.Avalonia.Foldable** adds foldable device support to [Avalonia](https://avaloniaui.net): it reports how the device is folded and lays out your content around the fold.
 
-<p align="center"><img src="images/iphone-duo-showcase.gif" width="672" alt="The Showcase spanning both screens of the iPhone Duo simulator" /></p>
+<p align="center"><img src="../images/iphone-duo-showcase.gif" width="672" alt="The Showcase spanning both screens of the iPhone Duo simulator" /></p>
 
 ## What's included
 

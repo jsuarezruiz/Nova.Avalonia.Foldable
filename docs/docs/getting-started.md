@@ -47,7 +47,7 @@ Let the activity handle configuration changes, so it isn't recreated when the de
     MainLauncher = true,
     ResizeableActivity = true,
     ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode
-        | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
+        | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.Density)]
 public class MainActivity : AvaloniaMainActivity { }
 ```
 
@@ -59,10 +59,4 @@ On a half-open device the two views sit on either side of the fold. On a regular
 
 ## Try it without a device
 
-Run the Showcase's desktop app, which hosts the app in a foldable simulator:
-
-```bash
-dotnet run --project samples/Nova.Avalonia.Foldable.Showcase/Nova.Avalonia.Foldable.Showcase.Desktop
-```
-
-[Testing without a device](testing.md) explains how to use the same simulated fold in your own app and tests.
+The Showcase's [desktop app](samples.md#showcase) hosts the app in a foldable simulator, and [Testing without a device](testing.md) explains how to use the same simulated fold in your own app and tests.

@@ -21,7 +21,7 @@ The repository has two sample apps. Both use the library from source.
 - the state kept when the device folds and unfolds;
 - the hinge warping the stars, the way scrolling does.
 
-<p align="center"><img src="../images/iphone-duo-showcase.gif" width="672" alt="The Showcase on the iPhone Duo simulator" /></p>
+<p align="center"><img src="../../images/iphone-duo-showcase.gif" width="672" alt="The Showcase on the iPhone Duo simulator" /></p>
 
 The desktop app adds the [foldable simulator](testing.md#the-desktop-simulator):
 

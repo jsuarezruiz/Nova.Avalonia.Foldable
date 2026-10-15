@@ -19,7 +19,7 @@ description: Read the posture, hinge angle and fold bounds from XAML and code.
 </UserControl>
 ```
 
-The provider for the top level is created the first time it is needed and disposed when the top level closes.
+The provider for the top level is created the first time it is needed and disposed when the top level closes. Tracking is shared by everything on the top level, `TwoPaneView` included, so setting `Fold.IsEnabled` back to `False` doesn't stop it.
 
 ## Attached properties
 
@@ -31,7 +31,7 @@ All of these are read-only from your side and inherited by every control below t
 | `Fold.Posture` | `DevicePosture` | `Unknown`, `Closed`, `HalfOpened` or `Flat`. |
 | `Fold.HingeAngle` | `double?` | Degrees, 0 closed and 180 flat; `null` when the platform doesn't report it. |
 | `Fold.IsSeparating` | `bool` | The fold currently divides the content. |
-| `Fold.FoldOrientation` | `FoldOrientation` | `None`, `Vertical` (panes left and right) or `Horizontal` (panes top and bottom). |
+| `Fold.Orientation` | `FoldOrientation` | `None`, `Vertical` (panes left and right) or `Horizontal` (panes top and bottom). |
 | `Fold.IsFoldable` | `bool` | The device has a hinge. |
 
 [FoldState](xref:Nova.Avalonia.Foldable.FoldState) also offers `FoldBounds`, the fold as a `Rect?` in top-level coordinates, and two shortcuts: `IsBook` (half open with a vertical fold) and `IsTabletop` (half open with a horizontal fold).
@@ -98,6 +98,8 @@ Keep in mind that Avalonia 12 pads the content for safe areas (`TopLevel.AutoSaf
 ## Hinge angle
 
 Use the hinge angle for effects only, never for layout. The iPhone Duo reports it, but many Android foldables don't expose a hinge sensor to apps. Base layout on `Posture`, `IsSeparating` and `FoldBounds`.
+
+While the device folds, the angle can change several times a frame. Angle-only changes reach the tree at most once a frame, with the latest angle; posture and fold changes arrive at once.
 
 ```csharp
 if (change.Property == Fold.HingeAngleProperty && change.NewValue is double angle)

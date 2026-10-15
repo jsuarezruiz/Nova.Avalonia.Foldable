@@ -31,10 +31,18 @@
     "resource": [
       {
         "files": [
-          "images/**",
           "logo.png",
           "favicon.png"
         ]
+      },
+      {
+        "files": [
+          "images/**"
+        ],
+        "exclude": [
+          "images/banner.png"
+        ],
+        "src": ".."
       }
     ],
     "output": "_site",

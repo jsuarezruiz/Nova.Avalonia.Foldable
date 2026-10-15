@@ -10,7 +10,7 @@ A foldable has a hinge, and the hinge changes what a good layout looks like. Hel
 ## Concepts
 
 - **Posture**: how the device is folded. [DevicePosture](xref:Nova.Avalonia.Foldable.DevicePosture) is `Closed`, `HalfOpened` (book or tabletop) or `Flat`, and `Unknown` until the hinge reports or when the platform can't tell.
-- **Hinge angle**: degrees from 0 (closed) to 180 (flat), where the platform exposes it. Use it for effects, never for layout: not every device reports it.
+- **Hinge angle**: degrees from 0 (closed) to 180 (flat), where the platform exposes it. [Reading the fold](fold.md#hinge-angle) explains what it's good for.
 - **Fold bounds**: the fold as a rectangle in the coordinates of the top level. On the iPhone Duo it is a 40pt band; on Android it can be a thin line.
 - **Separating**: whether the fold currently divides the content, as it does while the device is half open.
 - **Orientation**: whether the fold runs top to bottom (panes side by side) or left to right (panes stacked).
@@ -23,7 +23,7 @@ All of these live in one snapshot, [FoldState](xref:Nova.Avalonia.Foldable.FoldS
 2. **[Fold](xref:Nova.Avalonia.Foldable.Fold)** publishes the provider's state on the top level as inherited attached properties, so every control below it can read, bind to or style on the fold.
 3. **[TwoPaneView](xref:Nova.Avalonia.Foldable.TwoPaneView)** reads those properties and lays out its two panes around the fold.
 
-You rarely touch providers directly. `TwoPaneView` starts tracking the fold as soon as it is on screen, and `Fold.IsEnabled` does the same for any other control.
+You rarely touch providers directly: `TwoPaneView` and [Fold.IsEnabled](fold.md#start-tracking) create them for you.
 
 ## Platform APIs
 

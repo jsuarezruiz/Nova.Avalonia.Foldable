@@ -13,6 +13,7 @@ The iOS provider attaches a `UIHingeInteraction` to the Avalonia root view for t
 
 - The iPhone Duo reports the fold as a 40pt band, for example `x=455.5 w=40` on the 951×669 inner display. `TwoPaneView` keeps both panes out of it.
 - A closed iPhone Duo reports no division region at all; only the hinge knows the device folds.
+- When the app moves between the cover and the inner display, UIKit updates the division region a moment after resizing the app, and can briefly report the inner display's fold turned sideways on the cover display. The provider reads the region again shortly after each resize and hinge update, and ignores regions that don't fit on the screen.
 - **Occlusion** regions are ignored, since they also report the camera housing on every iPhone.
 - On iOS versions before 27.1 the app runs normally and reports no fold.
 

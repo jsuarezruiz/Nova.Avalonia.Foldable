@@ -60,7 +60,7 @@ public void Half_Open_Splits_At_The_Fold()
 
 The Showcase's desktop app wraps a simulated provider in a foldable simulator:
 
-<p align="center"><img src="../images/desktop-simulator.png" width="720" alt="Showcase with the desktop foldable simulator" /></p>
+<p align="center"><img src="../../images/desktop-simulator.png" width="720" alt="Showcase with the desktop foldable simulator" /></p>
 
 - **Postures**: regular phone, closed, open, book, open rotated and tabletop, with the iPhone Duo's screen sizes and 40pt fold.
 - **Hinge**: the slider works like the real hinge: 0° closes the device, 180° lays it flat, and anything in between half-opens it.
@@ -68,8 +68,4 @@ The Showcase's desktop app wraps a simulated provider in a foldable simulator:
 - **Keys**: 1 to 6 pick a posture, and the left and right arrows move the hinge (hold Shift for 1°).
 - **Open the device**: plays the device unfolding from the cover display to flat.
 
-```bash
-dotnet run --project samples/Nova.Avalonia.Foldable.Showcase/Nova.Avalonia.Foldable.Showcase.Desktop
-```
-
-Sizes and the fold match the iPhone Duo, but safe-area insets aren't simulated. Check the final result on the [iPhone Duo simulator or the Pixel Fold emulator](platforms.md).
+[Samples](samples.md#showcase) has the command that runs it. Sizes and the fold match the iPhone Duo, but safe-area insets aren't simulated. Check the final result on the [iPhone Duo simulator or the Pixel Fold emulator](platforms.md).

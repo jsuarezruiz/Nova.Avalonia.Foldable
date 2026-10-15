@@ -28,8 +28,8 @@ Set the content of each pane with `Pane1` and `Pane2`:
 
 The view goes through these rules in order and uses the first one that applies:
 
-1. **Half open**, as a book or on a table: the panes sit on either side of the fold, side by side for a vertical fold and stacked for a horizontal one. The panes never overlap the fold itself.
-2. **Flat** with a fold across the view: the panes split at the fold when the view is wider than `MinWideModeWidth` (or taller than `MinTallModeHeight` for a horizontal fold). Turn this off with `SnapToFold="False"` to split by size instead.
+1. **The fold divides the view** (`IsSeparating`), as on a device half open like a book or on a table: the panes sit on either side of the fold, side by side for a vertical fold and stacked for a horizontal one. The panes never overlap the fold itself.
+2. **A fold crosses the view without dividing it**, as on a flat device: the panes split at the fold when the view is wider than `MinWideModeWidth` (or taller than `MinTallModeHeight` for a horizontal fold). Turn this off with `SnapToFold="False"` to split by size instead.
 3. **Wide enough**: side by side when the view is wider than `MinWideModeWidth`, split by `Pane1Length` and `Pane2Length`.
 4. **Tall enough**: stacked when the view is taller than `MinTallModeHeight`.
 5. **Otherwise**: one pane, the one `PanePriority` names.
@@ -40,17 +40,19 @@ A closed device shows its cover display, so the fold is ignored and the size rul
 
 `WideModeConfiguration` controls side-by-side layouts: `LeftRight` (the default) puts Pane1 on the left, `RightLeft` puts it on the right, and `SinglePane` never shows two panes side by side. `TallModeConfiguration` does the same for stacked layouts with `TopBottom`, `BottomTop` and `SinglePane`.
 
+When the fold divides the view, `SinglePane` shows the `PanePriority` pane across the whole view, as WinUI does across two screens. It doesn't fall back to stacking both panes across a vertical fold, or placing them side by side across a horizontal one.
+
 A common choice for tabletop posture is `BottomTop`, which puts Pane1 below the fold, within reach, and Pane2 above it:
 
 ```xml
 <fold:TwoPaneView TallModeConfiguration="BottomTop" />
 ```
 
-To keep a phone from stacking the panes just because it is tall, raise `MinTallModeHeight` well above any screen height. The panes still stack at a horizontal fold when the device is half open.
+To keep a phone from stacking the panes just because it is tall, raise `MinTallModeHeight` well above any screen height. The panes still stack at a horizontal fold that divides the view, as in tabletop posture.
 
 ## Sizes
 
-When no fold decides the split, `Pane1Length` and `Pane2Length` do. Pixel lengths are honored, and star lengths share the rest; `Auto` counts as `1*`.
+When no fold decides the split, `Pane1Length` and `Pane2Length` do, each for its own pane on whichever side it is. Pixel lengths are honored, and star lengths share the rest; `Auto` counts as `1*`. As in a WinUI grid, two pixel lengths can leave space unused, and when they don't fit, the pane on the left or top gets its length first.
 
 ```xml
 <!-- A fixed 320px list next to a detail pane that takes the rest. -->
@@ -59,13 +61,13 @@ When no fold decides the split, `Pane1Length` and `Pane2Length` do. Pixel length
 
 ## One pane at a time
 
-In single-pane mode `PanePriority` picks the pane on screen. The other pane leaves the visual tree but stays a logical child, so its state survives until it is shown again, for example when the device unfolds. Switch panes by changing the priority:
+In single-pane mode `PanePriority` picks the pane on screen. The other pane is only hidden, as WinUI collapses it: it stays in the visual tree, keeps its state and keeps running, so it comes back as it was, for example when the device unfolds. Switch panes by changing the priority:
 
 ```csharp
 Panes.PanePriority = TwoPaneViewPriority.Pane2; // Show the detail.
 ```
 
-Anything that ticks off the top level's frames can't run while its pane is hidden. Start animations when the pane is shown, or in `AttachedToVisualTree`.
+Like any hidden control, the hidden pane's animations and timers keep running. To pause expensive ones, check the pane's `IsEffectivelyVisible` when `ModeChanged` fires.
 
 ## Reacting to mode changes
 
