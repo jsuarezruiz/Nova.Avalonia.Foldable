@@ -12,19 +12,19 @@ Each platform has its own provider, picked automatically by target framework. Yo
 The iOS provider attaches a `UIHingeInteraction` to the Avalonia root view for the hinge status and angle, and reads the view's **division** reserved region for the fold. UIKit points map 1:1 to Avalonia's device-independent pixels (DIPs).
 
 - The iPhone Duo reports the fold as a 40pt band, for example `x=455.5 w=40` on the 951×669 inner display. `TwoPaneView` keeps both panes out of it.
-- A closed iPhone Duo reports no division region at all; only the hinge knows the device folds.
+- A closed iPhone Duo reports no division region at all. Only the hinge knows the device folds.
 - When the app moves between the cover and the inner display, UIKit updates the division region a moment after resizing the app, and can briefly report the inner display's fold turned sideways on the cover display. The provider reads the region again shortly after each resize and hinge update, and ignores regions that don't fit on the screen.
 - **Occlusion** regions are ignored, since they also report the camera housing on every iPhone.
 - On iOS versions before 27.1 the app runs normally and reports no fold.
 
 ### The temporary bindings
 
-The iOS 27.1 APIs come from `Nova.Avalonia.Foldable.Bindings.iOS`, a copy of the definitions in [dotnet/macios#26705](https://github.com/dotnet/macios/pull/26705). That PR is merged into the `xcode27.1` branch of dotnet/macios, but it isn't in a released .NET for iOS workload yet. The bindings' `buildTransitive` targets drop the link-time references to the new Objective-C classes, so apps link against older SDKs and resolve the classes at runtime. Type and member names match the PR: once .NET for iOS ships them, the bindings project is deleted and the library switches to the official `UIKit` types, with no change for apps.
+The iOS 27.1 APIs come from `Nova.Avalonia.Foldable.Bindings.iOS`, a copy of the definitions in [dotnet/macios#26705](https://github.com/dotnet/macios/pull/26705). That PR is merged into the `xcode27.1` branch of dotnet/macios, but it isn't in a released .NET for iOS workload yet. The bindings' `buildTransitive` targets drop the link-time references to the new Objective-C classes, so apps link against older SDKs and resolve the classes at runtime. Type and member names match the PR, so once .NET for iOS ships them, the bindings project is deleted and the library switches to the official `UIKit` types, with no change for apps.
 
 ### The iPhone Duo simulator
 
 1. Install **Xcode 27.1** with the **iOS 27.1** simulator runtime. The iOS 27.2 beta 1 runtime lists the iPhone Duo (`iPhone19,4`) as unsupported.
-2. Build an iOS head against the Xcode 27.1 SDK; set `MD_APPLE_SDK_ROOT` if another Xcode is selected. The samples also build with Xcode 27.0, but the app then runs inset on the Duo instead of filling the display.
+2. Build an iOS head against the Xcode 27.1 SDK, setting `MD_APPLE_SDK_ROOT` if another Xcode is selected. The samples also build with Xcode 27.0, but the app then runs inset on the Duo instead of filling the display.
 3. Run it on the **iPhone Duo** simulator, and change postures with the buttons at the bottom of **Device Hub**, which replaces the Simulator app in Xcode 27.
 
 ## Android
@@ -35,7 +35,7 @@ The Android provider runs on Android 6.0 (API 23) and later. It listens to Jetpa
 - The bounds are converted from window pixels to top-level DIPs.
 - `IsSeparating` comes straight from WindowManager.
 
-WindowManager has no hinge angle, so the provider reads the `TYPE_HINGE_ANGLE` sensor where the device has one, and pauses it while the app is in the background. With no folding feature in the window, as on the cover screen, the posture comes from the sensor: below 30° is `Closed`, otherwise `Unknown`. Without a sensor there is no way to tell a closed device from a window that simply doesn't span the fold, so the posture is `Unknown`, and it is also `Unknown` until WindowManager or the sensor has reported.
+WindowManager has no hinge angle, so the provider reads the `TYPE_HINGE_ANGLE` sensor on Android 11 (API 30) and later, where the device has one, and pauses it while the app is in the background. With no folding feature in the window, as on the cover screen, the posture comes from the sensor, `Closed` below 30° and `Unknown` above. Without a sensor there is no way to tell a closed device from a window that simply doesn't span the fold, so the posture is `Unknown`, and it is also `Unknown` until WindowManager or the sensor has reported.
 
 ### The Pixel Fold emulator
 

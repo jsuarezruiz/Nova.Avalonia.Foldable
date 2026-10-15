@@ -5,7 +5,7 @@ description: A two-pane layout that splits at the fold on foldables and by size 
 
 # TwoPaneView
 
-[TwoPaneView](xref:Nova.Avalonia.Foldable.TwoPaneView) shows two panes side by side, stacked, or one at a time. On a foldable it puts them on either side of the fold; everywhere else it decides by its own size. It follows the WinUI and .NET MAUI `TwoPaneView` API, so code and knowledge carry over; the differences are listed below.
+[TwoPaneView](xref:Nova.Avalonia.Foldable.TwoPaneView) shows two panes side by side, stacked, or one at a time. On a foldable it puts them on either side of the fold, and everywhere else it decides by its own size. It follows the WinUI and .NET MAUI `TwoPaneView` API, so existing code carries over. The differences are listed below.
 
 ## Create a two-pane view
 
@@ -22,23 +22,23 @@ Set the content of each pane with `Pane1` and `Pane2`:
 </fold:TwoPaneView>
 ```
 
-`TwoPaneView` starts tracking the fold as soon as it is on screen; you don't need to set `Fold.IsEnabled`.
+`TwoPaneView` starts tracking the fold as soon as it is on screen, so you don't need to set `Fold.IsEnabled`.
 
 ## How the layout is chosen
 
 The view goes through these rules in order and uses the first one that applies:
 
-1. **The fold divides the view** (`IsSeparating`), as on a device half open like a book or on a table: the panes sit on either side of the fold, side by side for a vertical fold and stacked for a horizontal one. The panes never overlap the fold itself.
-2. **A fold crosses the view without dividing it**, as on a flat device: the panes split at the fold when the view is wider than `MinWideModeWidth` (or taller than `MinTallModeHeight` for a horizontal fold). Turn this off with `SnapToFold="False"` to split by size instead.
-3. **Wide enough**: side by side when the view is wider than `MinWideModeWidth`, split by `Pane1Length` and `Pane2Length`.
-4. **Tall enough**: stacked when the view is taller than `MinTallModeHeight`.
-5. **Otherwise**: one pane, the one `PanePriority` names.
+1. When the fold divides the view (`IsSeparating`), as on a device half open like a book or on a table, the panes sit on either side of it, side by side for a vertical fold and stacked for a horizontal one. They never overlap the fold itself.
+2. When a fold crosses the view without dividing it, as on a flat device, the panes split at the fold if the view is wider than `MinWideModeWidth` (or taller than `MinTallModeHeight` for a horizontal fold). Turn this off with `SnapToFold="False"` to split by size instead.
+3. When the view is wider than `MinWideModeWidth`, the panes sit side by side, split by `Pane1Length` and `Pane2Length`.
+4. When it's taller than `MinTallModeHeight`, they're stacked.
+5. Otherwise it shows one pane, the one `PanePriority` names.
 
 A closed device shows its cover display, so the fold is ignored and the size rules apply.
 
 ## Pane order
 
-`WideModeConfiguration` controls side-by-side layouts: `LeftRight` (the default) puts Pane1 on the left, `RightLeft` puts it on the right, and `SinglePane` never shows two panes side by side. `TallModeConfiguration` does the same for stacked layouts with `TopBottom`, `BottomTop` and `SinglePane`.
+`WideModeConfiguration` controls side-by-side layouts. `LeftRight` (the default) puts Pane1 on the left, `RightLeft` puts it on the right, and `SinglePane` never shows two panes side by side. `TallModeConfiguration` does the same for stacked layouts with `TopBottom`, `BottomTop` and `SinglePane`.
 
 When the fold divides the view, `SinglePane` shows the `PanePriority` pane across the whole view, as WinUI does across two screens. It doesn't fall back to stacking both panes across a vertical fold, or placing them side by side across a horizontal one.
 
@@ -52,7 +52,7 @@ To keep a phone from stacking the panes just because it is tall, raise `MinTallM
 
 ## Sizes
 
-When no fold decides the split, `Pane1Length` and `Pane2Length` do, each for its own pane on whichever side it is. Pixel lengths are honored, and star lengths share the rest; `Auto` counts as `1*`. As in a WinUI grid, two pixel lengths can leave space unused, and when they don't fit, the pane on the left or top gets its length first.
+When no fold decides the split, `Pane1Length` and `Pane2Length` do, each for its own pane on whichever side it is. Pixel lengths are honored, star lengths share the rest, and `Auto` counts as `1*`. As in a WinUI grid, two pixel lengths can leave space unused, and when they don't fit, the pane on the left or top gets its length first.
 
 ```xml
 <!-- A fixed 320px list next to a detail pane that takes the rest. -->
@@ -61,7 +61,7 @@ When no fold decides the split, `Pane1Length` and `Pane2Length` do, each for its
 
 ## One pane at a time
 
-In single-pane mode `PanePriority` picks the pane on screen. The other pane is only hidden, as WinUI collapses it: it stays in the visual tree, keeps its state and keeps running, so it comes back as it was, for example when the device unfolds. Switch panes by changing the priority:
+In single-pane mode `PanePriority` picks the pane on screen. The other pane is only hidden, as WinUI collapses it. It stays in the visual tree, keeps its state and keeps running, so it comes back as it was, for example when the device unfolds. Switch panes by changing the priority:
 
 ```csharp
 Panes.PanePriority = TwoPaneViewPriority.Pane2; // Show the detail.
@@ -82,16 +82,16 @@ Panes.ModeChanged += (_, _) =>
 
 ## Differences from WinUI and .NET MAUI
 
-- **Fold awareness**: the panes follow the fold reported by the platform, including the width of the fold itself.
-- **SnapToFold**: an addition that splits at the fold on a flat device too.
-- The thresholds behave like WinUI's: two panes only when the size is *above* `MinWideModeWidth` or `MinTallModeHeight`, so exactly 641 still shows one pane.
+- The panes follow the fold reported by the platform, including the width of the fold itself.
+- `SnapToFold` is new. It splits at the fold on a flat device too.
+- The thresholds behave like WinUI's. There are two panes only when the size is *above* `MinWideModeWidth` or `MinTallModeHeight`, so exactly 641 still shows one pane.
 
 ## Properties
 
 | Property | Type | Default | Description |
 | --- | --- | --- | --- |
-| `Pane1` | `Control?` | `null` | The first pane: left, top, or the only one by default. |
-| `Pane2` | `Control?` | `null` | The second pane: right or bottom. |
+| `Pane1` | `Control?` | `null` | The first pane, on the left or top, and the one shown alone by default. |
+| `Pane2` | `Control?` | `null` | The second pane, on the right or bottom. |
 | `Pane1Length` | `GridLength` | `1*` | Pane1's share when no fold decides the split. |
 | `Pane2Length` | `GridLength` | `1*` | Pane2's share when no fold decides the split. |
 | `PanePriority` | `TwoPaneViewPriority` | `Pane1` | The pane shown in single-pane mode. |

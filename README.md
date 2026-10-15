@@ -4,7 +4,7 @@ Foldable device support for [Avalonia](https://avaloniaui.net). It tells your ap
 
 <p align="center"><img src="images/banner.png" alt="Nova.Avalonia.Foldable" /></p>
 
-On devices without a fold nothing changes: the library reports no fold and `TwoPaneView` falls back to size-based layout, so the same app runs on phones, tablets, desktop and the web.
+On devices without a fold nothing changes. The library reports no fold and `TwoPaneView` falls back to size-based layout, so the same app runs on phones, tablets, desktop and the web.
 
 <p align="center"><img src="images/iphone-duo-showcase.gif" width="672" alt="The Showcase spanning both screens of the iPhone Duo simulator" /></p>
 
@@ -12,9 +12,7 @@ On devices without a fold nothing changes: the library reports no fold and `TwoP
 
 ## Documentation
 
-**[Read the Nova.Avalonia.Foldable documentation](docs/docs/introduction.md)**: [getting started](docs/docs/getting-started.md), [`TwoPaneView`](docs/docs/twopaneview.md), [reading the fold](docs/docs/fold.md), [testing without a device](docs/docs/testing.md) and [platform details](docs/docs/platforms.md).
-
-To browse the generated API reference, [build the documentation locally](CONTRIBUTING.md#setting-up).
+The [documentation site](https://jsuarezruiz.github.io/Nova.Avalonia.Foldable/) covers [getting started](docs/docs/getting-started.md), [`TwoPaneView`](docs/docs/twopaneview.md), [reading the fold](docs/docs/fold.md), [testing without a device](docs/docs/testing.md) and [platform details](docs/docs/platforms.md), and has the [API reference](https://jsuarezruiz.github.io/Nova.Avalonia.Foldable/api/Nova.Avalonia.Foldable.html).
 
 ## Platform support
 
@@ -24,7 +22,7 @@ To browse the generated API reference, [build the documentation locally](CONTRIB
 | Android 6.0+ (API 23) | Jetpack WindowManager and the hinge angle sensor | Pixel Fold emulator |
 | Desktop, browser | None, reports no fold | |
 
-The iOS 27.1 APIs aren't in .NET for iOS yet, so this repo carries its own copy of the bindings in [`Nova.Avalonia.Foldable.Bindings.iOS`](src/Nova.Avalonia.Foldable.Bindings.iOS); [Platforms](docs/docs/platforms.md#the-temporary-bindings) explains where they come from and when they go away. On iOS versions before 27.1 the app still runs and reports no fold. Android uses Microsoft's `Xamarin.AndroidX.Window` packages, so it needs no custom bindings.
+The iOS 27.1 APIs aren't in .NET for iOS yet, so this repo carries its own copy of the bindings in [`Nova.Avalonia.Foldable.Bindings.iOS`](src/Nova.Avalonia.Foldable.Bindings.iOS). [Platforms](docs/docs/platforms.md#the-temporary-bindings) explains where they come from and when they go away. On iOS versions before 27.1 the app still runs and reports no fold. Android uses Microsoft's `Xamarin.AndroidX.Window` packages, so it needs no custom bindings.
 
 ## Getting started
 
@@ -59,7 +57,7 @@ The iOS and Android heads each need one small change before the fold is reported
 
 ### Reading the fold
 
-`TwoPaneView` tracks the fold on its own. Anywhere else, set `Fold.IsEnabled` near the root. Every control below it then inherits the fold through attached properties: `Fold.State`, `Posture` (`Unknown`, `Closed`, `HalfOpened` or `Flat`), `HingeAngle`, `IsSeparating`, `Orientation` and `IsFoldable`.
+`TwoPaneView` tracks the fold on its own. Anywhere else, set `Fold.IsEnabled` near the root. Every control below it then inherits the fold through the attached properties `Fold.State`, `Posture` (`Unknown`, `Closed`, `HalfOpened` or `Flat`), `HingeAngle`, `IsSeparating`, `Orientation` and `IsFoldable`.
 
 ```xml
 <UserControl xmlns:fold="using:Nova.Avalonia.Foldable"
@@ -121,11 +119,11 @@ dotnet run --project samples/Nova.Avalonia.Foldable.Showcase/Nova.Avalonia.Folda
 
 ## Limitations
 
-- The iOS bindings are temporary; see [Platforms](docs/docs/platforms.md#the-temporary-bindings).
-- The hinge angle is only reported where the platform exposes it; on Android the device needs a hinge sensor.
+- The iOS bindings are temporary, as [Platforms](docs/docs/platforms.md#the-temporary-bindings) explains.
+- The hinge angle is only reported where the platform exposes it. On Android the device needs a hinge sensor and Android 11 or later.
 - Avalonia 12 pads the content for safe areas, such as the Duo's sensor edge. `TwoPaneView` accounts for it, but keep it in mind when you position things against `FoldBounds` yourself.
 
-Next on the list: NuGet packages, the official iOS bindings, camera housing regions, and real Auto lengths and animated mode changes in `TwoPaneView`.
+Next on the list are NuGet packages, the official iOS bindings, camera housing regions, and real Auto lengths and animated mode changes in `TwoPaneView`.
 
 ## Contributing and license
 

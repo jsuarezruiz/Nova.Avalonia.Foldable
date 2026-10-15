@@ -29,12 +29,12 @@ All of these are read-only from your side and inherited by every control below t
 | --- | --- | --- |
 | `Fold.State` | `FoldState` | The whole snapshot. |
 | `Fold.Posture` | `DevicePosture` | `Unknown`, `Closed`, `HalfOpened` or `Flat`. |
-| `Fold.HingeAngle` | `double?` | Degrees, 0 closed and 180 flat; `null` when the platform doesn't report it. |
+| `Fold.HingeAngle` | `double?` | Degrees, 0 closed and 180 flat, or `null` when the platform doesn't report it. |
 | `Fold.IsSeparating` | `bool` | The fold currently divides the content. |
 | `Fold.Orientation` | `FoldOrientation` | `None`, `Vertical` (panes left and right) or `Horizontal` (panes top and bottom). |
 | `Fold.IsFoldable` | `bool` | The device has a hinge. |
 
-[FoldState](xref:Nova.Avalonia.Foldable.FoldState) also offers `FoldBounds`, the fold as a `Rect?` in top-level coordinates, and two shortcuts: `IsBook` (half open with a vertical fold) and `IsTabletop` (half open with a horizontal fold).
+[FoldState](xref:Nova.Avalonia.Foldable.FoldState) also offers `FoldBounds`, the fold as a `Rect?` in top-level coordinates, and two shortcuts, `IsBook` (half open with a vertical fold) and `IsTabletop` (half open with a horizontal fold).
 
 ## In XAML
 
@@ -99,7 +99,7 @@ Keep in mind that Avalonia 12 pads the content for safe areas (`TopLevel.AutoSaf
 
 Use the hinge angle for effects only, never for layout. The iPhone Duo reports it, but many Android foldables don't expose a hinge sensor to apps. Base layout on `Posture`, `IsSeparating` and `FoldBounds`.
 
-While the device folds, the angle can change several times a frame. Angle-only changes reach the tree at most once a frame, with the latest angle; posture and fold changes arrive at once.
+While the device folds, the angle can change several times a frame. Angle-only changes reach the tree at most once a frame, with the latest angle. Posture and fold changes arrive at once.
 
 ```csharp
 if (change.Property == Fold.HingeAngleProperty && change.NewValue is double angle)

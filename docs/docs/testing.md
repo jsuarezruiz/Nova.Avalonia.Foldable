@@ -58,14 +58,10 @@ public void Half_Open_Splits_At_The_Fold()
 
 ## The desktop simulator
 
-The Showcase's desktop app wraps a simulated provider in a foldable simulator:
+The Showcase's desktop app wraps a simulated provider in a foldable simulator.
 
 <p align="center"><img src="../../images/desktop-simulator.png" width="720" alt="Showcase with the desktop foldable simulator" /></p>
 
-- **Postures**: regular phone, closed, open, book, open rotated and tabletop, with the iPhone Duo's screen sizes and 40pt fold.
-- **Hinge**: the slider works like the real hinge: 0° closes the device, 180° lays it flat, and anything in between half-opens it.
-- **What the app sees**: a live readout of the state the app receives.
-- **Keys**: 1 to 6 pick a posture, and the left and right arrows move the hinge (hold Shift for 1°).
-- **Open the device**: plays the device unfolding from the cover display to flat.
+It has the regular phone, closed, open, book, open rotated and tabletop postures, with the iPhone Duo's screen sizes and 40pt fold. The hinge slider works like the real hinge, so 0° closes the device, 180° lays it flat, and anything in between half-opens it. A readout shows the state the app receives. The 1 to 6 keys pick a posture, the left and right arrows move the hinge (hold Shift for 1°), and **Open the device** plays the device unfolding from the cover display to flat.
 
 [Samples](samples.md#showcase) has the command that runs it. Sizes and the fold match the iPhone Duo, but safe-area insets aren't simulated. Check the final result on the [iPhone Duo simulator or the Pixel Fold emulator](platforms.md).

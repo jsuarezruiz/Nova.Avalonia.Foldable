@@ -1,0 +1,6 @@
+/* The logo is a 64px image, sharp on high-density screens; show it at the size of the title next to it. */
+#logo {
+  height: 32px;
+  width: auto;
+  margin-right: 0.5rem;
+}

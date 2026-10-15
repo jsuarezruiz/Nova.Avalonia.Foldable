@@ -10,7 +10,7 @@ Follow these steps to reference the library, prepare the iOS and Android heads, 
 ## Prerequisites
 
 - .NET 10 SDK with the `ios` and `android` workloads for mobile heads
-- Avalonia 12.1 or later
+- Avalonia 12.1.4 or later
 - Xcode for iOS work (Xcode 27.1 for the iPhone Duo simulator)
 
 ## Reference the library
@@ -55,7 +55,7 @@ public class MainActivity : AvaloniaMainActivity { }
 
 Every public type lives in the `Nova.Avalonia.Foldable` namespace, so one XAML namespace covers everything. Declare it and give a `TwoPaneView` a view for each pane, as in [Create a two-pane view](twopaneview.md#create-a-two-pane-view).
 
-On a half-open device the two views sit on either side of the fold. On a regular phone the default size rules stack them, because most phones are taller than `MinTallModeHeight`; raise that value to show one pane there instead. See [TwoPaneView](twopaneview.md) for the full set of rules.
+On a half-open device the two views sit on either side of the fold. On a regular phone the default size rules stack them, because most phones are taller than `MinTallModeHeight`. Raise that value to show one pane there instead. See [TwoPaneView](twopaneview.md) for the full set of rules.
 
 ## Try it without a device
 

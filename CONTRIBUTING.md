@@ -4,8 +4,8 @@ Thanks for helping. Bug reports, device reports, docs and code are all welcome.
 
 ## Before you start
 
-- **Found a bug?** Open an issue with the device or emulator, OS version, what you expected and what you got. The most useful thing you can attach is the output of the [Sample](samples/Nova.Avalonia.Foldable.Sample): it prints every value the library reports.
-- **Tested on a real foldable?** Please share it, even if everything worked. Real-device reports (Galaxy Fold, Pixel Fold, iPhone Duo, …) are the most valuable contribution right now.
+- **Found a bug?** Open an issue with the device or emulator, OS version, what you expected and what you got. The most useful thing you can attach is the output of the [Sample](samples/Nova.Avalonia.Foldable.Sample), which prints every value the library reports.
+- **Tested on a real foldable?** Please share it, even if everything worked. Reports from real devices, such as a Galaxy Fold, Pixel Fold or iPhone Duo, help the most right now.
 - **Planning a larger change** (a new provider, an API change, a new control)? Open an issue first so we can agree on the shape before you spend time on it.
 
 ## Setting up
@@ -38,11 +38,11 @@ dotnet docfx docs/docfx.json --serve
 ## Making changes
 
 1. Fork, then create a branch from `main`.
-2. Keep changes focused: one fix or feature per pull request.
-3. Match the surrounding code: naming, comment density, file layout. The repository uses `Nullable` everywhere; keep new code warning-free.
+2. Keep changes focused, with one fix or feature per pull request.
+3. Match the naming, comment density and file layout of the surrounding code. The repository uses `Nullable` everywhere, so keep new code warning-free.
 4. Add or update tests. Layout logic belongs in the headless tests under `tests/`, driven by `SimulatedFoldStateProvider`, so it can be checked without a device.
 5. If you touch a platform provider, run the Sample on that platform and include what it reported in the pull request (a screenshot or the `FOLDDIAG` log lines).
-6. Update the README, the documentation site or the FAQ when behavior changes.
+6. Update the README, the documentation site or the FAQ when behavior changes. The NuGet package has its own README, `src/Nova.Avalonia.Foldable/README.md`, with absolute links, since nuget.org can't follow relative ones.
 
 ### Where things live
 
@@ -50,7 +50,7 @@ dotnet docfx docs/docfx.json --serve
 | --- | --- |
 | Core API (`Fold`, `FoldState`, `DevicePosture`, `FoldOrientation`) | `src/Nova.Avalonia.Foldable` |
 | `TwoPaneView` and its enums | `src/Nova.Avalonia.Foldable/Controls/TwoPaneView` |
-| Fold sources: the `IFoldStateProvider` interface, the no-fold fallback and the simulated fold for tests | `src/Nova.Avalonia.Foldable/Providers` |
+| The `IFoldStateProvider` interface, the no-fold fallback and the simulated fold for tests | `src/Nova.Avalonia.Foldable/Providers` |
 | iOS implementation | `src/Nova.Avalonia.Foldable/Platforms/iOS` |
 | Android implementation | `src/Nova.Avalonia.Foldable/Platforms/Android` |
 | iOS 27.1 bindings (mirror dotnet/macios#26705) | `src/Nova.Avalonia.Foldable.Bindings.iOS` |
@@ -58,16 +58,16 @@ dotnet docfx docs/docfx.json --serve
 | Settings, icons and launch screens the sample apps share | `samples/Shared` |
 | Documentation site (DocFX) and FAQ | `docs` |
 
-Folders are for navigation only: every public type stays in the `Nova.Avalonia.Foldable` namespace, so apps need one `using` and one XAML `xmlns`.
+Folders are for navigation only. Every public type stays in the `Nova.Avalonia.Foldable` namespace, so apps need one `using` and one XAML `xmlns`.
 
 ### A few rules of thumb
 
-- **Coordinates:** providers report `FoldBounds` in top-level DIPs. Convert platform units (points, pixels) at the provider boundary, never in consumers.
-- **Threads:** providers raise `Changed` on the UI thread.
-- **No fold is not an error:** return `FoldState.None` (or a state with `IsFoldable = false`) instead of throwing, so apps run unchanged on every device.
-- **Hinge angle is for effects:** don't make layout depend on it; not every device exposes it.
-- **iOS bindings:** keep them identical to dotnet/macios#26705, so switching to the official ones stays a namespace change. Don't add convenience members there.
-- **Android interop:** objects coming through generic callbacks or interface-typed lists need `JavaCast<T>()` / `Class.IsInstance`, not C# type tests.
+- Providers report `FoldBounds` in top-level DIPs. Convert platform units (points, pixels) at the provider boundary, never in consumers.
+- Providers raise `Changed` on the UI thread.
+- No fold is not an error. Return `FoldState.None` (or a state with `IsFoldable = false`) instead of throwing, so apps run unchanged on every device.
+- The hinge angle is for effects. Don't make layout depend on it, since not every device exposes it.
+- Keep the iOS bindings identical to dotnet/macios#26705, so switching to the official ones stays a namespace change, and don't add convenience members there.
+- On Android, objects coming through generic callbacks or interface-typed lists need `JavaCast<T>()` or `Class.IsInstance`, not C# type tests.
 
 ## Pull requests
 

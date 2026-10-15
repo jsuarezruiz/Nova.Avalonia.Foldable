@@ -17,8 +17,9 @@
     <PackageReference Include="Avalonia" />
   </ItemGroup>
 
+  <!-- Its own README: nuget.org renders Markdown only, with absolute links and images from a few hosts. -->
   <ItemGroup>
-    <None Include="..\..\README.md" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'ios'">

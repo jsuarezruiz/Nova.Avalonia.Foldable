@@ -6,8 +6,8 @@
 
 Any foldable whose platform exposes the fold:
 
-- **iOS:** iPhone Duo, iOS 27.1 or later.
-- **Android:** foldables with Jetpack WindowManager support, such as the Pixel Fold and the Galaxy Z Fold / Flip series.
+- The iPhone Duo, on iOS 27.1 or later.
+- Android foldables with Jetpack WindowManager support, such as the Pixel Fold and the Galaxy Z Fold and Flip series.
 
 Everywhere else (regular phones, tablets, desktop, browser) the library reports `FoldState.None` and `TwoPaneView` behaves like a size-based two-pane control.
 
@@ -21,7 +21,7 @@ Yes. There's no fold there, so you get the size-based layout. To design fold-awa
 
 ### Is it on NuGet?
 
-Not yet. Reference the projects for now; packages are on the roadmap.
+Not yet. Reference the projects for now. Packages are on the roadmap.
 
 ## iOS
 
@@ -31,19 +31,19 @@ The iPhone Duo APIs (`UIHingeInteraction`, `UIHinge`, `-[UIView reservedRegionsO
 
 ### Why `ValidateXcodeVersion=false`?
 
-The .NET for iOS workload checks for the Xcode version it was built against, which is older than the Xcode 27.1 the iPhone Duo simulator needs. The bindings are resolved at runtime and don't depend on the Xcode version; the samples build with Xcode 27.0 and 27.1. The samples turn the check off in `samples/Shared/iOS/iOSApp.props`; build with `-p:ValidateXcodeVersion=true` to keep it.
+The .NET for iOS workload checks for the Xcode version it was built against, which is older than the Xcode 27.1 the iPhone Duo simulator needs. The bindings are resolved at runtime and don't depend on the Xcode version, and the samples build with Xcode 27.0 and 27.1. The samples turn the check off in `samples/Shared/iOS/iOSApp.props`. Build with `-p:ValidateXcodeVersion=true` to keep it.
 
 ### I get `Undefined symbols: _OBJC_CLASS_$_UIHinge` when linking
 
-You're building against an SDK older than 27.1 without the bindings' `buildTransitive` targets. A future NuGet package will apply them automatically; with project references, import `Nova.Avalonia.Foldable.Bindings.iOS.targets` in your iOS head, as [Prepare the iOS head](docs/getting-started.md#prepare-the-ios-head) shows.
+You're building against an SDK older than 27.1 without the bindings' `buildTransitive` targets. A future NuGet package will apply them automatically. With project references, import `Nova.Avalonia.Foldable.Bindings.iOS.targets` in your iOS head, as [Prepare the iOS head](docs/getting-started.md#prepare-the-ios-head) shows.
 
 ### Does the app still run on iOS versions before 27.1?
 
-Yes. The new classes are resolved at runtime; on older iOS the provider reports no fold.
+Yes. The new classes are resolved at runtime, and on older iOS the provider reports no fold.
 
 ### The fold is 40pt wide. Is that right?
 
-Yes, that's how the iPhone Duo reports its fold; [Platforms](docs/platforms.md#ios) has the numbers. `TwoPaneView` keeps both panes out of it.
+Yes, that's how the iPhone Duo reports its fold. [Platforms](docs/platforms.md#ios) has the numbers. `TwoPaneView` keeps both panes out of it.
 
 ### My content is smaller than the display on the Duo
 
@@ -59,21 +59,21 @@ Shut the simulator down and boot it again. A session that has been running for a
 
 ### `simctl io screenshot` gives a black image on the Duo
 
-The Duo has several display ports and the default one is blank. Pass the display explicitly (`xcrun simctl io <device> enumerate` lists them); the inner and cover displays are separate, and only one recording can run at a time.
+The Duo has several display ports and the default one is blank. Pass the display explicitly (`xcrun simctl io <device> enumerate` lists them). The inner and cover displays are separate, and only one recording can run at a time.
 
 ## Android
 
 ### Do I need to write Java or Kotlin?
 
-No. Everything is C#. The library uses Microsoft's .NET bindings for Jetpack WindowManager (`Xamarin.AndroidX.Window` and `Xamarin.AndroidX.Window.WindowJava`). "WindowJava" is the name of the callback-style variant of the API, which maps better to C# than Kotlin flows; it isn't Java code you write.
+No. Everything is C#. The library uses Microsoft's .NET bindings for Jetpack WindowManager (`Xamarin.AndroidX.Window` and `Xamarin.AndroidX.Window.WindowJava`). "WindowJava" is the name of the callback-style variant of the API, which maps better to C# than Kotlin flows. It isn't Java code you write.
 
 ### Why is `HingeAngle` null on my Android device?
 
-WindowManager doesn't report a hinge angle. The library reads it from the `TYPE_HINGE_ANGLE` sensor, which some foldables don't expose to apps. Posture and fold bounds still work.
+WindowManager doesn't report a hinge angle. The library reads it from the `TYPE_HINGE_ANGLE` sensor, which needs Android 11 (API 30) or later, and which some foldables don't expose to apps. Posture and fold bounds still work.
 
 ### The build fails with `JAVA0000 … defined multiple times`
 
-AndroidX version mismatch: WindowManager pulls AndroidX Core 1.19 (which absorbed `core-ktx`) while another dependency brings an older `Xamarin.AndroidX.Core.Core.Ktx`. The library references `Core.Ktx` 1.19 to align them. If your app pins an older version, update it.
+It's an AndroidX version mismatch. WindowManager pulls AndroidX Core 1.19 (which absorbed `core-ktx`) while another dependency brings an older `Xamarin.AndroidX.Core.Core.Ktx`. The library references `Core.Ktx` 1.19 to align them. If your app pins an older version, update it.
 
 ### My Debug APK closes immediately with "No assemblies found … Fast Deployment"
 
@@ -93,11 +93,11 @@ On macOS 27 with emulator 36.2.12, the **Android 36.1** image crashed on first b
 
 ### The app doesn't move to the cover screen when I close the Pixel Fold emulator
 
-That's an emulator limitation on this setup: the dual-display switch doesn't happen. The library still reports `Closed` (from the hinge sensor). On a real device the app moves to the cover screen and `TwoPaneView` switches to one pane.
+That's an emulator limitation on this setup, where the dual-display switch doesn't happen. The library still reports `Closed` (from the hinge sensor). On a real device the app moves to the cover screen and `TwoPaneView` switches to one pane.
 
 ### `screencap` returns text instead of an image
 
-The Pixel Fold has two displays. Pass one: `adb shell dumpsys SurfaceFlinger --display-id` lists them, then `adb exec-out screencap -d <id> -p > shot.png`.
+The Pixel Fold has two displays, so pass one. `adb shell dumpsys SurfaceFlinger --display-id` lists them, and `adb exec-out screencap -d <id> -p > shot.png` captures the one you pick.
 
 ## TwoPaneView
 
@@ -107,8 +107,8 @@ In single-pane mode the pane that isn't shown is hidden, as WinUI collapses it. 
 
 ### A `TransitioningContentControl` shows nothing after it comes back
 
-That's an Avalonia issue (12.1.2 to 12.1.4): after a `CrossFade`, a `TransitioningContentControl` that is removed from the visual tree and added back can show its content in the presenter it faded out, which is still transparent. `TwoPaneView` only hides a pane, so its panes aren't affected. If your app removes such a control itself, hide it with `IsVisible` instead, or use a transition that doesn't leave the faded-out page transparent.
+That's an Avalonia issue in 12.1.2 to 12.1.4. After a `CrossFade`, a `TransitioningContentControl` that is removed from the visual tree and added back can show its content in the presenter it faded out, which is still transparent. `TwoPaneView` only hides a pane, so its panes aren't affected. If your app removes such a control itself, hide it with `IsVisible` instead, or use a transition that doesn't leave the faded-out page transparent.
 
 ### Can I use the hinge angle for layout?
 
-Please don't: not every Android foldable exposes it. [Hinge angle](docs/fold.md#hinge-angle) has what to use instead.
+Please don't, since not every Android foldable exposes it. [Hinge angle](docs/fold.md#hinge-angle) has what to use instead.
