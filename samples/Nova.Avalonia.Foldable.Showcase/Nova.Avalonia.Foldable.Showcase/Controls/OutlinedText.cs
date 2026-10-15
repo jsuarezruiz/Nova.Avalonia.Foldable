@@ -32,42 +32,37 @@ public sealed class OutlinedText : Control
 
     private const double StrokeWidth = 1d;
 
+    private FormattedText? _formatted;
+    private Geometry? _geometry;
+    private ImmutablePen? _stroke;
+    private double _geometryTop = double.NaN;
+
+    // Text that changes without changing size still needs drawing again.
     static OutlinedText()
     {
-        AffectsRender<OutlinedText>(ForegroundProperty, IsOutlinedProperty);
+        AffectsRender<OutlinedText>(
+            TextProperty, FontFamilyProperty, FontSizeProperty, ForegroundProperty, IsOutlinedProperty, LineHeightProperty);
         AffectsMeasure<OutlinedText>(TextProperty, FontFamilyProperty, FontSizeProperty, LineHeightProperty);
     }
 
-    /// <summary>
-    /// Gets or sets the text to draw.
-    /// </summary>
     public string? Text
     {
         get => GetValue(TextProperty);
         set => SetValue(TextProperty, value);
     }
 
-    /// <summary>
-    /// Gets or sets the font.
-    /// </summary>
     public FontFamily FontFamily
     {
         get => GetValue(FontFamilyProperty);
         set => SetValue(FontFamilyProperty, value);
     }
 
-    /// <summary>
-    /// Gets or sets the size of the text.
-    /// </summary>
     public double FontSize
     {
         get => GetValue(FontSizeProperty);
         set => SetValue(FontSizeProperty, value);
     }
 
-    /// <summary>
-    /// Gets or sets the brush the text is drawn in.
-    /// </summary>
     public IBrush? Foreground
     {
         get => GetValue(ForegroundProperty);
@@ -96,7 +91,7 @@ public sealed class OutlinedText : Control
     {
         base.Render(context);
 
-        if (Build() is not { } formatted || Foreground is not { } brush)
+        if (Format() is not { } formatted || Foreground is not { } brush)
         {
             return;
         }
@@ -128,32 +123,29 @@ public sealed class OutlinedText : Control
         }
     }
 
-    private FormattedText? _formatted;
-    private Geometry? _geometry;
-    private ImmutablePen? _stroke;
-    private double _geometryTop = double.NaN;
-
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
 
-        // Anything that reshapes or recolors the glyphs clears the cache.
-        if (change.Property == TextProperty || change.Property == FontFamilyProperty ||
-            change.Property == FontSizeProperty || change.Property == ForegroundProperty)
+        // Reshaped glyphs are laid out again; a new brush only needs a new pen.
+        if (change.Property == TextProperty || change.Property == FontFamilyProperty || change.Property == FontSizeProperty)
         {
             _formatted = null;
             _geometry = null;
-            _stroke = null;
         }
         else if (change.Property == LineHeightProperty)
         {
             _geometry = null;
         }
+        else if (change.Property == ForegroundProperty)
+        {
+            _stroke = null;
+        }
     }
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        if (Build() is not { } formatted)
+        if (Format() is not { } formatted)
         {
             return default;
         }
@@ -161,7 +153,7 @@ public sealed class OutlinedText : Control
         return new Size(formatted.WidthIncludingTrailingWhitespace, double.IsNaN(LineHeight) ? formatted.Height : LineHeight);
     }
 
-    private FormattedText? Build()
+    private FormattedText? Format()
     {
         if (Text is not { Length: > 0 } text || FontSize <= 0d)
         {

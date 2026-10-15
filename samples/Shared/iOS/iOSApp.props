@@ -1,0 +1,26 @@
+<Project>
+  <!-- What the samples' iOS apps share; each app adds its id, title and views. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-ios</TargetFramework>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <AppIcon>AppIcon</AppIcon>
+    <!-- The .NET for iOS workload expects an older Xcode than the 27.1 the iPhone Duo simulator needs, so its
+         check is off here. Pass -p:ValidateXcodeVersion=true to turn it back on. -->
+    <ValidateXcodeVersion Condition="'$(ValidateXcodeVersion)' == ''">false</ValidateXcodeVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ImageAsset Include="$(MSBuildThisFileDirectory)Assets.xcassets\**\*" Link="Assets.xcassets\%(RecursiveDir)%(Filename)%(Extension)" />
+    <BundleResource Include="$(MSBuildThisFileDirectory)LaunchMark.png" Link="LaunchMark.png" />
+    <InterfaceDefinition Include="$(MSBuildThisFileDirectory)LaunchScreen.xib" Link="LaunchScreen.xib" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.iOS" />
+    <!-- Avalonia.iOS brings in SkiaSharp's managed API but not its iOS native framework. -->
+    <PackageReference Include="SkiaSharp.NativeAssets.iOS" />
+  </ItemGroup>
+</Project>

@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+
 namespace Nova.Avalonia.Foldable.Showcase.Models;
 
 /// <summary>
@@ -8,9 +11,6 @@ public static class DemoData
 {
     private const int Repeats = 3;
 
-    /// <summary>
-    /// Gets the list, in order.
-    /// </summary>
     public static IReadOnlyList<Constellation> Constellations { get; } = Build();
 
     private static Constellation[] Build()

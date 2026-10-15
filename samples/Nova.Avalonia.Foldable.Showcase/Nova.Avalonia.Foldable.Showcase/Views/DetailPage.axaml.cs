@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
@@ -64,9 +66,6 @@ public partial class DetailPage : UserControl
     /// </summary>
     public event EventHandler? ReturnRequested;
 
-    /// <summary>
-    /// Gets or sets the constellation being shown.
-    /// </summary>
     public Constellation? Constellation
     {
         get => GetValue(ConstellationProperty);
@@ -82,18 +81,12 @@ public partial class DetailPage : UserControl
         set => SetValue(IsRedModeProperty, value);
     }
 
-    /// <summary>
-    /// Gets or sets whether the return button is shown.
-    /// </summary>
     public bool IsReturnVisible
     {
         get => GetValue(IsReturnVisibleProperty);
         set => SetValue(IsReturnVisibleProperty, value);
     }
 
-    /// <summary>
-    /// Gets the star chart.
-    /// </summary>
     public Bitmap? ChartImage
     {
         get => _chartImage;
@@ -185,7 +178,7 @@ public partial class DetailPage : UserControl
     {
         _chartScale.ScaleX = _chartScale.ScaleY = ChartEasing.Ease(progress);
 
-        Label.Opacity = LabelEasing.Ease(progress);
+        Lettering.Opacity = LabelEasing.Ease(progress);
     }
 
     private void OnReturnClicked(object? sender, RoutedEventArgs e) =>

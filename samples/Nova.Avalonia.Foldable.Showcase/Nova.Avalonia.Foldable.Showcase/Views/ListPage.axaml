@@ -5,6 +5,7 @@
 
   <UserControl.Styles>
     <Style Selector="Button.constellationRow">
+      <Setter Property="Cursor" Value="Hand" />
       <Setter Property="Template">
         <ControlTemplate>
           <ContentPresenter Content="{TemplateBinding Content}"

@@ -11,4 +11,6 @@ public static class FlutterEasings
     public static Easing EaseOut { get; } = new SplineEasing(0d, 0d, 0.58d, 1d);
 
     public static Easing EaseOutQuad { get; } = new SplineEasing(0.25d, 0.46d, 0.45d, 0.94d);
+
+    public static Easing FastOutSlowIn { get; } = new SplineEasing(0.4d, 0d, 0.2d, 1d);
 }

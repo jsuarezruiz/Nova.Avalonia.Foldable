@@ -5,7 +5,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Avalonia.VisualTree;
 
 namespace Nova.Avalonia.Foldable.Sample;
 
@@ -75,7 +74,11 @@ public sealed class SampleView : UserControl
 
         if (change.Property == Fold.StateProperty && change.NewValue is FoldState state)
         {
-            _events.Enqueue($"{DateTime.Now:HH:mm:ss.fff} {state.Posture} {Angle(state)} sep={state.IsSeparating} fold={R(state.FoldBounds)}");
+            // Phones shouldn't stack the panes just for being tall, but a horizontal fold needs a reachable
+            // MinTallModeHeight for SnapToFold to split at it on a flat device.
+            _panes.MinTallModeHeight = state.Orientation == FoldOrientation.Horizontal ? 641 : 100000;
+
+            _events.Enqueue($"{DateTime.Now:HH:mm:ss.fff} {state.Posture} {Angle(state)} sep={state.IsSeparating} fold={FormatRect(state.FoldBounds)}");
             while (_events.Count > 12)
                 _events.Dequeue();
             _log.Text = "HINGE UPDATES\n" + string.Join('\n', _events);
@@ -98,15 +101,15 @@ public sealed class SampleView : UserControl
             $"IsFoldable    {state.IsFoldable}",
             $"IsSeparating  {state.IsSeparating}",
             $"Orientation   {state.Orientation}  book={state.IsBook} tabletop={state.IsTabletop}",
-            $"FoldBounds    {R(state.FoldBounds)}",
+            $"FoldBounds    {FormatRect(state.FoldBounds)}",
             "",
-            $"TopLevel      {S(topLevel.ClientSize)}  scale={topLevel.RenderScaling:0.##}",
+            $"TopLevel      {FormatSize(topLevel.ClientSize)}  scale={topLevel.RenderScaling:0.##}",
             $"SafeArea      {safe}",
-            $"View          {R(RectIn(this, topLevel))}",
-            $"TwoPaneView   {R(RectIn(_panes, topLevel))}",
+            $"View          {FormatRect(RectIn(this, topLevel))}",
+            $"TwoPaneView   {FormatRect(RectIn(_panes, topLevel))}",
             $"Mode          {_panes.Mode}  priority={_panes.PanePriority}  snap={_panes.SnapToFold}",
-            $"Pane1         {R(RectIn(_panes.Pane1, topLevel))}",
-            $"Pane2         {R(RectIn(_panes.Pane2, topLevel))}",
+            $"Pane1         {FormatRect(RectIn(_panes.Pane1, topLevel))}",
+            $"Pane2         {FormatRect(RectIn(_panes.Pane2, topLevel))}",
         };
         var text = string.Join('\n', lines);
 
@@ -132,9 +135,10 @@ public sealed class SampleView : UserControl
         Console.WriteLine($"FOLDDIAG [{why}]\n{text}");
     }
 
+    // Null for a pane TwoPaneView has hidden.
     private static Rect? RectIn(Visual? visual, TopLevel topLevel)
     {
-        if (visual is null || visual.GetVisualParent() is null)
+        if (visual is null || !visual.IsEffectivelyVisible)
             return null;
         return visual.TranslatePoint(default, topLevel) is { } p ? new Rect(p, visual.Bounds.Size) : null;
     }
@@ -142,11 +146,11 @@ public sealed class SampleView : UserControl
     private static string Angle(FoldState state) =>
         state.HingeAngle is { } a ? a.ToString("0.0", CultureInfo.InvariantCulture) + "°" : "null";
 
-    private static string R(Rect? r) => r is { } v
+    private static string FormatRect(Rect? r) => r is { } v
         ? string.Create(CultureInfo.InvariantCulture, $"x={v.X:0.#} y={v.Y:0.#} w={v.Width:0.#} h={v.Height:0.#}")
-        : "null (not in tree / none)";
+        : "null (hidden / none)";
 
-    private static string S(Size s) => string.Create(CultureInfo.InvariantCulture, $"{s.Width:0.#}×{s.Height:0.#}");
+    private static string FormatSize(Size s) => string.Create(CultureInfo.InvariantCulture, $"{s.Width:0.#}×{s.Height:0.#}");
 
     private static TextBlock Readout() => new()
     {

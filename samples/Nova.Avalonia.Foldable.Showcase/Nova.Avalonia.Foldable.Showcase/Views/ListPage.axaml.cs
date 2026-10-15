@@ -1,6 +1,6 @@
+using System;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Nova.Avalonia.Foldable.Showcase.Controls;
@@ -18,13 +18,11 @@ public partial class ListPage : UserControl
 
     private const double VerticalPadding = 24d;
 
-    private double _previousOffset;
-
     public ListPage()
     {
         InitializeComponent();
 
-        Build();
+        AddEntries();
 
         Scroller.ScrollChanged += OnScrollChanged;
     }
@@ -39,7 +37,7 @@ public partial class ListPage : UserControl
     /// </summary>
     public event EventHandler<ConstellationTitleCard>? EntryTapped;
 
-    private void Build()
+    private void AddEntries()
     {
         // As in the original: 20 for the first entry, then Dart's Random(1).nextInt(4) * 20 sequence.
         // System.Random(1) produces a different one, so the values are listed.
@@ -70,7 +68,6 @@ public partial class ListPage : UserControl
                 VerticalContentAlignment = VerticalAlignment.Stretch,
                 Background = Brushes.Transparent,
                 BorderThickness = default,
-                Cursor = new Cursor(StandardCursorType.Hand),
                 RenderTransform = new TranslateTransform(isRedMode ? EdgeNudge : -EdgeNudge, 0d),
             };
 
@@ -82,12 +79,11 @@ public partial class ListPage : UserControl
         }
     }
 
+    // Only scrolling drives the stars. A change of viewport or extent, as when the device folds or the
+    // list is rescaled, can move the offset too; those reports are left out.
     private void OnScrollChanged(object? sender, ScrollChangedEventArgs e)
     {
-        var offset = Scroller.Offset.Y;
-
-        Scrolled?.Invoke(this, offset - _previousOffset);
-
-        _previousOffset = offset;
+        if (e.OffsetDelta.Y != 0d && e.ExtentDelta == default && e.ViewportDelta == default)
+            Scrolled?.Invoke(this, e.OffsetDelta.Y);
     }
 }

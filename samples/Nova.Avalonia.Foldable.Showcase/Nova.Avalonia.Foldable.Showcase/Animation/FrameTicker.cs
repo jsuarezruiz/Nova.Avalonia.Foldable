@@ -1,3 +1,4 @@
+using System;
 using Avalonia;
 using Avalonia.Controls;
 
@@ -11,6 +12,9 @@ public sealed class FrameTicker
     private readonly Visual _owner;
     private readonly Action<TimeSpan> _onTick;
 
+    // Created once rather than for every frame requested.
+    private readonly Action<TimeSpan> _onFrame;
+
     private TimeSpan _startedAt;
     private bool _hasStartTime;
     private bool _framePending;
@@ -23,6 +27,7 @@ public sealed class FrameTicker
     {
         _owner = owner;
         _onTick = onTick;
+        _onFrame = OnFrame;
     }
 
     /// <summary>
@@ -62,11 +67,11 @@ public sealed class FrameTicker
         if (TopLevel.GetTopLevel(_owner) is { } topLevel)
         {
             _framePending = true;
-            topLevel.RequestAnimationFrame(OnFrame);
+            topLevel.RequestAnimationFrame(_onFrame);
         }
         else if (!_waitingForAttach)
         {
-            // Out of the tree (a hidden pane): no frames to ask for, so carry on once it's back.
+            // Out of the tree: no frames to ask for, so carry on once it's back.
             _waitingForAttach = true;
             _owner.AttachedToVisualTree += OnReattached;
         }

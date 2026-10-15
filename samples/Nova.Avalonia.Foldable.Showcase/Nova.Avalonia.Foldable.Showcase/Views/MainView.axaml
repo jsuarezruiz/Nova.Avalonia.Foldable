@@ -3,12 +3,15 @@
              xmlns:fold="using:Nova.Avalonia.Foldable"
              xmlns:controls="using:Nova.Avalonia.Foldable.Showcase.Controls"
              xmlns:views="using:Nova.Avalonia.Foldable.Showcase.Views"
-             x:Class="Nova.Avalonia.Foldable.Showcase.Views.MainView">
+             x:Class="Nova.Avalonia.Foldable.Showcase.Views.MainView"
+             fold:Fold.IsEnabled="True">
 
+  <!-- Fold.IsEnabled: this view reads the fold itself, for the caption and the hinge warping the stars,
+       so it asks for it instead of relying on the TwoPaneView below to start tracking. -->
   <Panel Background="{StaticResource SkyBrush}">
 
     <!-- One sky behind both panes: the stars carry on across the fold. -->
-    <controls:StarField Name="Stars" StarCount="400" />
+    <controls:StarField Name="Stars" />
 
     <!-- Tall only on a horizontal fold (tabletop), with the chart above and the list below. -->
     <fold:TwoPaneView Name="Panes"

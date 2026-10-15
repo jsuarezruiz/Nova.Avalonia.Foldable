@@ -55,6 +55,7 @@ dotnet docfx docs/docfx.json --serve
 | Android implementation | `src/Nova.Avalonia.Foldable/Platforms/Android` |
 | iOS 27.1 bindings (mirror dotnet/macios#26705) | `src/Nova.Avalonia.Foldable.Bindings.iOS` |
 | Tests | `tests/Nova.Avalonia.Foldable.Tests` |
+| Settings, icons and launch screens the sample apps share | `samples/Shared` |
 | Documentation site (DocFX) and FAQ | `docs` |
 
 Folders are for navigation only: every public type stays in the `Nova.Avalonia.Foldable` namespace, so apps need one `using` and one XAML `xmlns`.

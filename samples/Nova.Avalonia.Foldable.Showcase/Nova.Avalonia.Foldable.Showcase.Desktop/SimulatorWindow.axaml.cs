@@ -1,10 +1,11 @@
+using System;
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.Threading;
+using Nova.Avalonia.Foldable.Showcase.Animation;
 using Nova.Avalonia.Foldable.Showcase.Views;
 
 namespace Nova.Avalonia.Foldable.Showcase.Desktop;
@@ -40,13 +41,12 @@ public partial class SimulatorWindow : Window
 
     private readonly SimulatedFoldStateProvider _fold = new();
     private readonly MainView _view;
-    private readonly DispatcherTimer _playTimer = new() { Interval = TimeSpan.FromMilliseconds(16) };
+    private readonly FrameTicker _play;
+    private readonly TextBlock[] _readout = new TextBlock[6];
     private int _index = OpenIndex;
     private Preset _preset = Presets[OpenIndex];
     private bool _rotated;
-    private double? _hingeAngle;
-    private readonly TextBlock[] _readout = new TextBlock[6];
-    private DateTime _playStarted;
+    private bool _checking;
     private bool _updatingSlider;
     private Preset? _publishedPreset;
     private Matrix? _publishedTransform;
@@ -60,6 +60,7 @@ public partial class SimulatorWindow : Window
         InitializeComponent();
 
         _view = view;
+        _play = new FrameTicker(this, OnPlayFrame);
         Screen.Content = view;
         Fold.SetProvider(this, _fold);
 
@@ -83,10 +84,10 @@ public partial class SimulatorWindow : Window
             // The content is a panel, so screen readers get the title to announce.
             AutomationProperties.SetName(button, Presets[index].Title);
             // A click, even on the posture already picked, takes over from "Open the device".
-            button.Click += (_, _) => _playTimer.Stop();
+            button.Click += (_, _) => _play.Stop();
             button.IsCheckedChanged += (_, _) =>
             {
-                if (button.IsChecked == true)
+                if (button.IsChecked == true && !_checking)
                     Apply(index);
             };
             PresetList.Children.Add(button);
@@ -102,7 +103,7 @@ public partial class SimulatorWindow : Window
         {
             if (_updatingSlider)
                 return;
-            _playTimer.Stop();
+            _play.Stop();
             MoveHinge(e.NewValue);
         };
 
@@ -111,7 +112,6 @@ public partial class SimulatorWindow : Window
 
         // After layout, once the device has its final position in the window.
         LayoutUpdated += (_, _) => Publish();
-        _playTimer.Tick += OnPlayTick;
 
         Apply(_index);
     }
@@ -128,22 +128,22 @@ public partial class SimulatorWindow : Window
         },
     };
 
-    private void Apply(int index)
+    // An angle is passed when the hinge itself picked the preset, and kept instead of the preset's own.
+    private void Apply(int index, double? angle = null)
     {
         _index = index;
         var preset = Presets[index];
         if (preset.Axis != FoldAxis.None)
             _rotated = preset.Axis == FoldAxis.Horizontal;
 
-        // Keep the angle when the hinge itself picked this preset.
-        _preset = _hingeAngle is { } angle ? preset with { Angle = angle } : preset;
+        _preset = angle is { } a ? preset with { Angle = a } : preset;
         Screen.Width = preset.Screen.Width;
         Screen.Height = preset.Screen.Height;
         SetSlider(_preset.Angle);
         AngleSlider.IsEnabled = preset.Foldable;
         PlayButton.IsEnabled = preset.Foldable;
         if (!preset.Foldable)
-            _playTimer.Stop();
+            _play.Stop();
         Publish();
     }
 
@@ -165,16 +165,14 @@ public partial class SimulatorWindow : Window
             return;
         }
 
-        _hingeAngle = angle;
-        Check(index);
-        _hingeAngle = null;
+        Check(index, angle);
     }
 
     // 1 to 6 pick a posture; left and right move the hinge by 5°, or 1° with Shift.
     private void OnShortcut(object? sender, KeyEventArgs e)
     {
-        // Leave system shortcuts and text entry alone.
-        if ((e.KeyModifiers & ~KeyModifiers.Shift) != KeyModifiers.None || e.Source is TextBox)
+        // Leave system shortcuts alone.
+        if ((e.KeyModifiers & ~KeyModifiers.Shift) != KeyModifiers.None)
             return;
 
         var preset = e.Key switch
@@ -186,7 +184,7 @@ public partial class SimulatorWindow : Window
 
         if (preset >= 0)
         {
-            _playTimer.Stop();
+            _play.Stop();
             Check(preset);
             e.Handled = true;
             return;
@@ -195,7 +193,7 @@ public partial class SimulatorWindow : Window
         if (e.Key is Key.Left or Key.Right && _preset.Foldable)
         {
             var step = e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 1 : 5;
-            _playTimer.Stop();
+            _play.Stop();
             MoveHinge(Math.Clamp(_preset.Angle + (e.Key == Key.Right ? step : -step), 0, 180));
             e.Handled = true;
         }
@@ -268,7 +266,7 @@ public partial class SimulatorWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
-        _playTimer.Stop();
+        _play.Stop();
         base.OnClosed(e);
     }
 
@@ -276,13 +274,12 @@ public partial class SimulatorWindow : Window
     private void OnPlayClicked(object? sender, RoutedEventArgs e)
     {
         Check(ClosedIndex);
-        _playStarted = DateTime.UtcNow;
-        _playTimer.Start();
+        _play.Start();
     }
 
-    private void OnPlayTick(object? sender, EventArgs e)
+    private void OnPlayFrame(TimeSpan elapsed)
     {
-        var t = (DateTime.UtcNow - _playStarted).TotalSeconds;
+        var t = elapsed.TotalSeconds;
         if (t < 0.8)
             return;
 
@@ -290,16 +287,18 @@ public partial class SimulatorWindow : Window
         MoveHinge(180 * (1 - Math.Pow(1 - progress, 3)));
 
         if (progress >= 1)
-            _playTimer.Stop();
+            _play.Stop();
     }
 
-    private void Check(int index)
+    // Selects the preset's button and applies it once, whether or not the button was already selected.
+    private void Check(int index, double? angle = null)
     {
         if (PresetList.Children[index] is not RadioButton button)
             return;
-        if (button.IsChecked == true)
-            Apply(index);
-        else
-            button.IsChecked = true;
+
+        _checking = true;
+        button.IsChecked = true;
+        _checking = false;
+        Apply(index, angle);
     }
 }

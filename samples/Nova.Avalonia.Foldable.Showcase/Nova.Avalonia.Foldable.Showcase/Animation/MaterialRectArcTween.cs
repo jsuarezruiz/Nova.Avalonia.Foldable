@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Avalonia;
 
 namespace Nova.Avalonia.Foldable.Showcase.Animation;
@@ -7,8 +9,6 @@ namespace Nova.Avalonia.Foldable.Showcase.Animation;
 /// </summary>
 public sealed class MaterialRectArcTween
 {
-    private readonly Rect _begin;
-    private readonly Rect _end;
     private static readonly (Corner Begin, Corner End)[] Diagonals =
     [
         (Corner.TopLeft, Corner.BottomRight),
@@ -25,8 +25,8 @@ public sealed class MaterialRectArcTween
     /// </summary>
     public MaterialRectArcTween(Rect begin, Rect end)
     {
-        _begin = begin;
-        _end = end;
+        Begin = begin;
+        End = end;
 
         var centersVector = end.Center - begin.Center;
         var diagonal = Diagonals.MaxBy(candidate => Support(begin, centersVector, candidate));
@@ -36,18 +36,28 @@ public sealed class MaterialRectArcTween
     }
 
     /// <summary>
+    /// Gets the rectangle the flight starts from.
+    /// </summary>
+    public Rect Begin { get; }
+
+    /// <summary>
+    /// Gets the rectangle the flight lands on.
+    /// </summary>
+    public Rect End { get; }
+
+    /// <summary>
     /// Gets the rectangle <paramref name="progress"/> of the way through the flight.
     /// </summary>
     public Rect Lerp(double progress)
     {
         if (progress <= 0d)
         {
-            return _begin;
+            return Begin;
         }
 
         if (progress >= 1d)
         {
-            return _end;
+            return End;
         }
 
         var first = _beginArc.Lerp(progress);

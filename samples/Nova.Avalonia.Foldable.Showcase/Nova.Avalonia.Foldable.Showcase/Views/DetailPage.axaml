@@ -27,7 +27,7 @@
     <!-- Chart and lettering share one clock so their reveals overlap. -->
     <Panel Name="Chart" RenderTransformOrigin="50%,50%">
       <Image Source="{Binding ChartImage}" Stretch="Uniform" />
-      <Image Name="Label" Source="{Binding LabelImage}" Stretch="Uniform" Opacity="0" />
+      <Image Name="Lettering" Source="{Binding LabelImage}" Stretch="Uniform" Opacity="0" />
     </Panel>
   </DockPanel>
 

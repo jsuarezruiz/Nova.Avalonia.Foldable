@@ -1,9 +1,10 @@
+using System;
+
 namespace Nova.Avalonia.Foldable.Showcase.Models;
 
 /// <summary>
 /// One constellation in the guide. Port of <c>ConstellationData</c>.
 /// </summary>
-/// <param name="Title">Its name.</param>
 /// <param name="Subtitle">What it depicts.</param>
 /// <param name="Image">The stem of its artwork's file names.</param>
 public sealed record Constellation(string Title, string Subtitle, string Image)

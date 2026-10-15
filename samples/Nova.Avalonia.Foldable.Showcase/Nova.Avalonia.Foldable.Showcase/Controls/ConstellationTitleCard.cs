@@ -21,9 +21,6 @@ public sealed class ConstellationTitleCard : TemplatedControl
         IsRedModeProperty.Changed.AddClassHandler<ConstellationTitleCard>((x, e) =>
             x.PseudoClasses.Set(":red", e.GetNewValue<bool>()));
 
-    /// <summary>
-    /// Gets or sets the constellation being named.
-    /// </summary>
     public Constellation? Constellation
     {
         get => GetValue(ConstellationProperty);

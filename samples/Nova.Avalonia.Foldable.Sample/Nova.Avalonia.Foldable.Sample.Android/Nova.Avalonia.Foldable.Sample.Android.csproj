@@ -1,28 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\Shared\Android\AndroidApp.props" />
+
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0-android</TargetFramework>
-    <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
     <ApplicationId>com.nova.avalonia.foldable.sample</ApplicationId>
     <ApplicationTitle>Foldable Sample</ApplicationTitle>
-    <ApplicationVersion>1</ApplicationVersion>
-    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-    <AndroidPackageFormat>apk</AndroidPackageFormat>
-    <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
-    <!-- Keep Debug APKs self-contained, so they also run when installed with adb outside an IDE. -->
-    <EmbedAssembliesIntoApk Condition="'$(Configuration)' == 'Debug'">true</EmbedAssembliesIntoApk>
   </PropertyGroup>
-
-  <ItemGroup>
-    <AndroidResource Include="Icon.png">
-      <Link>Resources\drawable\Icon.png</Link>
-    </AndroidResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Avalonia.Android" />
-    <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Nova.Avalonia.Foldable.Sample\Nova.Avalonia.Foldable.Sample.csproj" />

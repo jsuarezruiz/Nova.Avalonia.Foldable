@@ -1,3 +1,4 @@
+using System;
 using Avalonia;
 
 namespace Nova.Avalonia.Foldable.Showcase.Animation;

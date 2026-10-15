@@ -1,3 +1,4 @@
+using System;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
@@ -43,12 +44,19 @@ public partial class MainView : UserControl
     private readonly DispatcherTimer _scrollRest = new() { Interval = ScrollRest };
     private readonly IPageTransition? _detailTransition;
 
+    // The flying card is laid out once per flight; each frame only moves and scales it through this.
+    private readonly MatrixTransform _flightTransform = new();
+
     private DetailPage? _detail;
     private Control? _fadingPane;
     private ConstellationTitleCard? _flyingCard;
+
+    // The list entry the detail came from, where the return flight lands.
+    private Control? _returnEntry;
     private Control? _flightSource;
     private Control? _flightTarget;
     private MaterialRectArcTween? _cardRectTween;
+    private (double Begin, double End) _flightScale;
     private int _flightId;
 
     public MainView()
@@ -78,12 +86,13 @@ public partial class MainView : UserControl
 
     private bool IsSinglePane => Panes.Mode == TwoPaneViewMode.SinglePane;
 
-    // Pulled back, thrown forward, then settled: legs of a fifth, a third and a half of the run.
+    // Pulled back, thrown forward, then settled back to the drift: legs of 20%, 30% and 50% of the run.
+    // It ends drifting rather than still: the one sky stays on screen behind every page.
     private static double FlightSpeedAt(double progress) => progress switch
     {
         < 0.2d => Lerp(IdleSpeed, -2d, FlutterEasings.EaseOut.Ease(progress / 0.2d)),
         < 0.5d => Lerp(-2d, 20d, FlutterEasings.EaseOut.Ease((progress - 0.2d) / 0.3d)),
-        _ => Lerp(20d, 0d, FlutterEasings.EaseOut.Ease((progress - 0.5d) / 0.5d)),
+        _ => Lerp(20d, IdleSpeed, FlutterEasings.EaseOut.Ease((progress - 0.5d) / 0.5d)),
     };
 
     private static double Lerp(double from, double to, double t) => from + ((to - from) * t);
@@ -159,8 +168,9 @@ public partial class MainView : UserControl
             return;
         }
 
-        // Read before the list leaves the visual tree on one screen.
-        var origin = RectOf(card);
+        // Read before the list is hidden on one screen.
+        var origin = SlotOf(card);
+        _returnEntry = card;
 
         // Also remembered with two panes, so closing the device keeps the constellation.
         ShowPane(TwoPaneViewPriority.Pane2);
@@ -176,7 +186,7 @@ public partial class MainView : UserControl
 
     private void ReturnToList(DetailPage detail)
     {
-        var origin = RectOf(detail.TitleCardControl);
+        var origin = SlotOf(detail.TitleCardControl);
 
         ShowPane(TwoPaneViewPriority.Pane1);
 
@@ -190,9 +200,9 @@ public partial class MainView : UserControl
             Stars.Speed = IdleSpeed;
         }
 
-        if (detail.Constellation is { } constellation && _flightSource is { } source)
+        if (detail.Constellation is { } constellation && _returnEntry is { } entry)
         {
-            BeginFlight(origin, detail.TitleCardControl, source, constellation, detail.IsRedMode);
+            BeginFlight(origin, detail.TitleCardControl, entry, constellation, detail.IsRedMode);
         }
     }
 
@@ -207,8 +217,8 @@ public partial class MainView : UserControl
 
         detail.ReturnRequested += (_, _) => ReturnToList(detail);
 
-        // A cross-fade started while the pane is out of the tree never ticks; ShowPane fades it instead.
-        DetailHost.PageTransition = TopLevel.GetTopLevel(DetailHost) is null ? null : _detailTransition;
+        // A page that arrives while its pane is hidden isn't cross-faded; ShowPane fades the pane in instead.
+        DetailHost.PageTransition = DetailHost.IsEffectivelyVisible ? _detailTransition : null;
 
         _detail?.Retire();
         _detail = detail;
@@ -282,13 +292,13 @@ public partial class MainView : UserControl
 
     // Hides both ends now and starts the flight after layout: the target page may be brand new.
     private void BeginFlight(
-        Rect origin,
+        Slot origin,
         Control from,
         Control to,
         Constellation constellation,
         bool isRedMode)
     {
-        if (origin.Width <= 0d)
+        if (origin.Bounds.Width <= 0d)
         {
             return;
         }
@@ -313,27 +323,52 @@ public partial class MainView : UserControl
             DispatcherPriority.Loaded);
     }
 
-    private Rect RectOf(Control control) =>
-        new(
-            control.TranslatePoint(default, this) ?? default,
-            control.TranslatePoint(new Point(control.Bounds.Width, control.Bounds.Height), this) ?? default);
+    // Where a control sits in this view, and how much the layout scales it there: the list shrinks
+    // on narrow panes. Empty when the control isn't laid out in this view.
+    private Slot SlotOf(Control control)
+    {
+        if (control.Bounds.Width <= 0d
+            || control.TranslatePoint(default, this) is not { } topLeft
+            || control.TranslatePoint(new Point(control.Bounds.Width, control.Bounds.Height), this) is not { } bottomRight)
+        {
+            return default;
+        }
+
+        var bounds = new Rect(topLeft, bottomRight);
+        return new Slot(bounds, bounds.Width / control.Bounds.Width);
+    }
 
     // Flies a copy of the card between the pages' slots; with two panes it crosses the fold.
     private void StartCardFlight(
-        Rect origin,
+        Slot origin,
         Control from,
         Control to,
         Constellation constellation,
         bool isRedMode)
     {
-        // Without a laid-out target, use where the detail page docks its card.
-        var host = IsSinglePane ? new Rect(Bounds.Size) : RectOf(DetailHost);
-        var destination = to.Bounds.Width > 0d
-            ? RectOf(to)
-            : new Rect(host.X + ((host.Width - origin.Width) / 2d), host.Y + 24d, origin.Width, origin.Height);
-        _cardRectTween = new MaterialRectArcTween(origin, destination);
+        // Without a laid-out target, aim for where the detail page docks its card, or, flying back to
+        // the list, hold still; the flight follows the real slot once it has one.
+        var destination = SlotOf(to);
 
-        _flyingCard ??= new ConstellationTitleCard();
+        if (destination.Bounds.Width <= 0d && to == _returnEntry)
+        {
+            destination = origin;
+        }
+        else if (destination.Bounds.Width <= 0d)
+        {
+            var host = IsSinglePane ? new Rect(Bounds.Size) : SlotOf(DetailHost).Bounds;
+            var size = origin.Bounds.Size / origin.Scale;
+            destination = new Slot(new Rect(host.X + ((host.Width - size.Width) / 2d), host.Y + 24d, size.Width, size.Height), 1d);
+        }
+
+        _cardRectTween = new MaterialRectArcTween(origin.Bounds, destination.Bounds);
+        _flightScale = (origin.Scale, destination.Scale);
+
+        _flyingCard ??= new ConstellationTitleCard
+        {
+            RenderTransform = _flightTransform,
+            RenderTransformOrigin = RelativePoint.TopLeft,
+        };
         _flyingCard.Constellation = constellation;
         _flyingCard.IsRedMode = isRedMode;
 
@@ -341,6 +376,9 @@ public partial class MainView : UserControl
         {
             FlightLayer.Children.Add(_flyingCard);
         }
+
+        // Its natural size, needed for the first frame, before the next layout pass.
+        _flyingCard.Measure(Size.Infinity);
 
         _flightSource = from;
         _flightTarget = to;
@@ -356,13 +394,26 @@ public partial class MainView : UserControl
             return;
         }
 
-        // Flutter's Hero default: opposite corners travel on arcs.
-        var bounds = tween.Lerp(progress);
+        // Like Flutter's Hero, follow the target if it moves mid-flight, as it does when the device
+        // folds, unfolds or rotates.
+        if (_flightTarget is { } target
+            && SlotOf(target) is { Bounds.Width: > 0d } slot
+            && slot.Bounds != tween.End)
+        {
+            _cardRectTween = tween = new MaterialRectArcTween(tween.Begin, slot.Bounds);
+            _flightScale = (_flightScale.Begin, slot.Scale);
+        }
 
-        Canvas.SetLeft(card, bounds.X);
-        Canvas.SetTop(card, bounds.Y);
-        card.Width = bounds.Width;
-        card.Height = bounds.Height;
+        // Flutter's Hero default: fastOutSlowIn timing, with opposite corners traveling on arcs.
+        var t = FlutterEasings.FastOutSlowIn.Ease(progress);
+        var bounds = tween.Lerp(t);
+        var scale = Lerp(_flightScale.Begin, _flightScale.End, t);
+
+        // Moved and scaled rather than resized, so no frame needs a layout pass. The card's content
+        // is centered at the top of its slot, so the copy is too.
+        var width = card.DesiredSize.Width * scale;
+        _flightTransform.Matrix = Matrix.CreateScale(scale, scale)
+            * Matrix.CreateTranslation(bounds.Center.X - (width / 2d), bounds.Y);
 
         if (progress < 1d)
         {
@@ -390,9 +441,12 @@ public partial class MainView : UserControl
             source.Opacity = 1d;
         }
 
-        // The target can be a detail page's card; don't hold on to the page after it's replaced.
+        // Either end can be a detail page's card; don't hold on to the page after it's replaced.
+        _flightSource = null;
         _flightTarget = null;
     }
 
     private void OnStarFlightChanged(double progress) => Stars.Speed = FlightSpeedAt(progress);
+
+    private readonly record struct Slot(Rect Bounds, double Scale);
 }
