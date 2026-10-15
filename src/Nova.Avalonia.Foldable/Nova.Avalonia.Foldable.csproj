@@ -4,6 +4,7 @@
     <!-- DesktopOnly=true skips the mobile targets, for machines without the iOS and Android workloads (Linux CI, docs). -->
     <TargetFrameworks Condition="'$(DesktopOnly)' != 'true'">$(TargetFrameworks);net10.0-ios;net10.0-android</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsAotCompatible>true</IsAotCompatible>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>Nova.Avalonia.Foldable</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -30,6 +31,12 @@
     <PackageReference Include="Xamarin.AndroidX.Window.WindowJava" />
     <!-- Aligns with the AndroidX Core that Window pulls in; an older Core.Ktx duplicates its classes. -->
     <PackageReference Include="Xamarin.AndroidX.Core.Core.Ktx" />
+    <!-- Window brings Lifecycle 2.11 and Avalonia.Android the rest of Lifecycle at 2.10, whose packages only
+         accept 2.10; referencing them here gives apps one Lifecycle version instead of NU1608 warnings. -->
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Process" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState.Android" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetPlatformIdentifier)' != 'ios'">

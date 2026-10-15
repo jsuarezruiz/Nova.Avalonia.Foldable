@@ -4,8 +4,11 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Animation;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -62,6 +65,57 @@ public class TwoPaneViewTests
     }
 
     [AvaloniaFact]
+    public void Two_Pixel_Lengths_Are_Both_Honored()
+    {
+        var (_, view, _) = Create(1000, 500);
+        view.Pane1Length = new GridLength(200);
+        view.Pane2Length = new GridLength(300);
+        view.UpdateLayout();
+
+        Assert.Equal(new Rect(0, 0, 200, 500), view.Pane1!.Bounds);
+        Assert.Equal(new Rect(200, 0, 300, 500), view.Pane2!.Bounds);
+    }
+
+    [AvaloniaFact]
+    public void Pixel_Lengths_That_Do_Not_Fit_Favor_The_First_Pane_On_Screen()
+    {
+        var (_, view, _) = Create(1000, 500);
+        view.Pane1Length = new GridLength(700);
+        view.Pane2Length = new GridLength(700);
+        view.WideModeConfiguration = TwoPaneViewWideModeConfiguration.RightLeft;
+        view.UpdateLayout();
+
+        Assert.Equal(new Rect(0, 0, 700, 500), view.Pane2!.Bounds);
+        Assert.Equal(new Rect(700, 0, 300, 500), view.Pane1!.Bounds);
+    }
+
+    [AvaloniaFact]
+    public void Right_Left_Keeps_Each_Pane_Length()
+    {
+        var (_, view, _) = Create(1000, 500);
+        view.Pane1Length = new GridLength(200);
+        view.WideModeConfiguration = TwoPaneViewWideModeConfiguration.RightLeft;
+        view.UpdateLayout();
+
+        Assert.Equal(new Rect(800, 0, 200, 500), view.Pane1!.Bounds);
+        Assert.Equal(new Rect(0, 0, 800, 500), view.Pane2!.Bounds);
+    }
+
+    [AvaloniaFact]
+    public void Bottom_Top_Keeps_Each_Pane_Length()
+    {
+        var (_, view, _) = Create(400, 1000);
+        view.Pane1Length = new GridLength(1, GridUnitType.Star);
+        view.Pane2Length = new GridLength(3, GridUnitType.Star);
+        view.TallModeConfiguration = TwoPaneViewTallModeConfiguration.BottomTop;
+        view.UpdateLayout();
+
+        Assert.Equal(TwoPaneViewMode.Tall, view.Mode);
+        Assert.Equal(new Rect(0, 750, 400, 250), view.Pane1!.Bounds);
+        Assert.Equal(new Rect(0, 0, 400, 750), view.Pane2!.Bounds);
+    }
+
+    [AvaloniaFact]
     public void Min_Wide_Mode_Width_Is_Exclusive_Like_WinUI()
     {
         var (window, view, _) = Create(641, 500);
@@ -82,16 +136,17 @@ public class TwoPaneViewTests
     [AvaloniaFact]
     public void Narrow_Without_Fold_Shows_Priority_Pane_Only()
     {
-        var (_, view, _) = Create(400, 500);
+        var (window, view, _) = Create(400, 500);
         view.PanePriority = TwoPaneViewPriority.Pane2;
         view.UpdateLayout();
 
         Assert.Equal(TwoPaneViewMode.SinglePane, view.Mode);
-        Assert.Null(view.Pane1!.GetVisualParent());
-        Assert.Same(view, view.Pane2!.GetVisualParent());
+        Assert.False(view.Pane1!.IsEffectivelyVisible);
+        Assert.True(view.Pane2!.IsEffectivelyVisible);
         Assert.Equal(new Rect(0, 0, 400, 500), view.Pane2!.Bounds);
-        // The hidden pane stays a logical child so its state survives.
+        // The hidden pane is only hidden, as WinUI collapses it: still a child in both trees.
         Assert.Same(view, view.Pane1!.Parent);
+        Assert.Same(window, TopLevel.GetTopLevel(view.Pane1));
     }
 
     [AvaloniaFact]
@@ -160,6 +215,42 @@ public class TwoPaneViewTests
     }
 
     [AvaloniaFact]
+    public void Single_Pane_Wide_Configuration_Shows_One_Pane_Across_A_Separating_Fold()
+    {
+        // Wide enough for the size rules to stack the panes, which would cut both of them at the fold.
+        var (_, view, _) = Create(1000, 700, FoldAt(DevicePosture.HalfOpened, new Rect(490, 0, 20, 700), separating: true));
+        view.WideModeConfiguration = TwoPaneViewWideModeConfiguration.SinglePane;
+        view.PanePriority = TwoPaneViewPriority.Pane2;
+        view.UpdateLayout();
+
+        Assert.Equal(TwoPaneViewMode.SinglePane, view.Mode);
+        Assert.False(view.Pane1!.IsEffectivelyVisible);
+        Assert.Equal(new Rect(0, 0, 1000, 700), view.Pane2!.Bounds);
+    }
+
+    [AvaloniaFact]
+    public void Single_Pane_Tall_Configuration_Shows_One_Pane_Across_A_Separating_Fold()
+    {
+        var (_, view, _) = Create(900, 700, FoldAt(DevicePosture.HalfOpened, new Rect(0, 340, 900, 20), separating: true));
+        view.TallModeConfiguration = TwoPaneViewTallModeConfiguration.SinglePane;
+        view.UpdateLayout();
+
+        Assert.Equal(TwoPaneViewMode.SinglePane, view.Mode);
+        Assert.Equal(new Rect(0, 0, 900, 700), view.Pane1!.Bounds);
+        Assert.False(view.Pane2!.IsEffectivelyVisible);
+    }
+
+    [AvaloniaFact]
+    public void Single_Pane_Wide_Configuration_Uses_The_Size_Rules_On_A_Flat_Fold()
+    {
+        var (_, view, _) = Create(1000, 700, FoldAt(DevicePosture.Flat, new Rect(490, 0, 20, 700), separating: false));
+        view.WideModeConfiguration = TwoPaneViewWideModeConfiguration.SinglePane;
+        view.UpdateLayout();
+
+        Assert.Equal(TwoPaneViewMode.Tall, view.Mode);
+    }
+
+    [AvaloniaFact]
     public void Fold_Changes_Update_Layout_And_Attached_Properties()
     {
         var (window, view, fold) = Create(500, 700);
@@ -171,7 +262,7 @@ public class TwoPaneViewTests
 
         Assert.Equal(TwoPaneViewMode.Wide, view.Mode);
         Assert.Equal(DevicePosture.HalfOpened, Fold.GetPosture(view.Pane1!));
-        Assert.Equal(FoldOrientation.Vertical, Fold.GetFoldOrientation(window));
+        Assert.Equal(FoldOrientation.Vertical, Fold.GetOrientation(window));
         Assert.True(Fold.GetState(view).IsBook);
     }
 
@@ -181,7 +272,8 @@ public class TwoPaneViewTests
         var view = new TwoPaneView { Pane1 = new Border(), Pane2 = new Border() };
         var window = new Window
         {
-            Width = 1000, Height = 700,
+            Width = 1000,
+            Height = 700,
             Content = new DockPanel { Children = { new Border { Width = 200, [DockPanel.DockProperty] = Dock.Left }, view } },
         };
         Fold.SetProvider(window, new SimulatedFoldStateProvider(FoldAt(DevicePosture.HalfOpened, new Rect(600, 0, 0, 700), separating: true)));
@@ -201,7 +293,8 @@ public class TwoPaneViewTests
         var view = new TwoPaneView { Pane1 = new Border(), Pane2 = new Border(), Width = 800, Height = 600 };
         var window = new Window
         {
-            Width = 400, Height = 300,
+            Width = 400,
+            Height = 300,
             Content = new LayoutTransformControl { LayoutTransform = new ScaleTransform(0.5, 0.5), Child = view },
         };
         // In the window the view is half size, so its fold at x=500 shows up at x=250.
@@ -227,8 +320,8 @@ public class TwoPaneViewTests
 
         Assert.Same(view, first.Parent);
         Assert.Same(view, second.Parent);
-        Assert.Same(view, first.GetVisualParent());
-        Assert.Same(view, second.GetVisualParent());
+        Assert.True(first.IsEffectivelyVisible);
+        Assert.True(second.IsEffectivelyVisible);
         Assert.Equal(new Rect(0, 0, 500, 500), second.Bounds);
     }
 
@@ -238,7 +331,8 @@ public class TwoPaneViewTests
         var view = new TwoPaneView { Pane1 = new Border { Width = 900 }, Pane2 = new Border() };
         var window = new Window
         {
-            Width = 1200, Height = 500,
+            Width = 1200,
+            Height = 500,
             Content = new StackPanel { Orientation = Orientation.Horizontal, Children = { view } },
         };
         Fold.SetProvider(window, new SimulatedFoldStateProvider());
@@ -296,7 +390,8 @@ public class TwoPaneViewTests
         view.ModeChanged += (_, _) => changes++;
         var window = new Window
         {
-            Width = 1000, Height = 700,
+            Width = 1000,
+            Height = 700,
             Content = new DockPanel { Children = { new Border { Width = 700, [DockPanel.DockProperty] = Dock.Left }, view } },
         };
         // The fold crosses the sidebar. Until the view's offset is known, it seems to cross the view instead.
@@ -409,6 +504,111 @@ public class TwoPaneViewTests
 
         host.RenderTransform = new TranslateTransform(100, 0);
         Assert.Equal(0, Watchers(slide, view));
+    }
+
+    [AvaloniaFact]
+    public async Task Cross_Faded_Content_Shows_Again_After_Its_Pane_Was_Hidden()
+    {
+        // A cross-fade leaves the page it faded out at zero opacity, and a TransitioningContentControl that
+        // is attached again moves its content into that page's presenter. A hidden pane mustn't detach it.
+        // The two presenters the themes give it; the headless test app has no theme.
+        var host = new TransitioningContentControl
+        {
+            Content = new Border(),
+            PageTransition = new CrossFade(TimeSpan.FromMilliseconds(50)),
+            Template = new FuncControlTemplate<TransitioningContentControl>((_, _) => new Panel
+            {
+                Children =
+                {
+                    new ContentPresenter { Name = "PART_ContentPresenter" },
+                    new ContentPresenter { Name = "PART_ContentPresenter2" },
+                },
+            }),
+        };
+        var view = new TwoPaneView { Pane1 = new Border(), Pane2 = host };
+        var window = new Window { Width = 1000, Height = 500, Content = view };
+        Fold.SetProvider(window, new SimulatedFoldStateProvider());
+        window.Show();
+        view.UpdateLayout();
+
+        var page = new Border();
+        var faded = false;
+        host.TransitionCompleted += (_, _) => faded = true;
+        host.Content = page;
+        await WaitFor(() => faded);
+        Assert.True(faded);
+
+        window.Width = 400;
+        Dispatcher.UIThread.RunJobs();
+        view.UpdateLayout();
+        Assert.Equal(TwoPaneViewMode.SinglePane, view.Mode);
+
+        window.Width = 1000;
+        Dispatcher.UIThread.RunJobs();
+        await WaitFor(() => view.Mode == TwoPaneViewMode.Wide);
+
+        Assert.True(page.IsEffectivelyVisible);
+        Assert.Equal(1, OpacityUpTo(page, view));
+    }
+
+    // The opacity a visual is drawn with relative to an ancestor.
+    private static double OpacityUpTo(Visual visual, Visual ancestor)
+    {
+        var opacity = 1d;
+        for (Visual? v = visual; v is not null && v != ancestor; v = v.GetVisualParent())
+            opacity *= v.Opacity;
+        return opacity;
+    }
+
+    // A Canvas moves the view in an arrange pass, the way scrolling does; the test app has no theme to
+    // give a ScrollViewer its template.
+    [AvaloniaFact]
+    public void Moving_Along_The_Fold_Does_Not_Lay_The_Panes_Out_Again()
+    {
+        var view = new MeasureCountingView { Pane1 = new Border(), Pane2 = new Border(), Width = 1000, Height = 1400 };
+        var window = new Window { Width = 1000, Height = 700, Content = new Canvas { Children = { view } } };
+        Fold.SetProvider(window, new SimulatedFoldStateProvider(FoldAt(DevicePosture.HalfOpened, new Rect(490, 0, 20, 700), separating: true)));
+        window.Show();
+        view.UpdateLayout();
+        view.UpdateLayout();
+        var measures = view.Measures;
+
+        Canvas.SetTop(view, -300);
+        view.UpdateLayout();
+        view.UpdateLayout();
+
+        Assert.Equal(-300, view.Bounds.Y);
+        Assert.Equal(measures, view.Measures);
+        Assert.Equal(new Rect(0, 0, 490, 1400), view.Pane1!.Bounds);
+    }
+
+    [AvaloniaFact]
+    public void Moving_Across_The_Fold_Moves_The_Split()
+    {
+        var view = new TwoPaneView { Pane1 = new Border(), Pane2 = new Border(), Width = 2000, Height = 700 };
+        var window = new Window { Width = 1000, Height = 700, Content = new Canvas { Children = { view } } };
+        Fold.SetProvider(window, new SimulatedFoldStateProvider(FoldAt(DevicePosture.HalfOpened, new Rect(490, 0, 20, 700), separating: true)));
+        window.Show();
+        view.UpdateLayout();
+        view.UpdateLayout();
+        Assert.Equal(490, view.Pane1!.Bounds.Width);
+
+        Canvas.SetLeft(view, -200);
+        view.UpdateLayout();
+        view.UpdateLayout();
+
+        Assert.Equal(690, view.Pane1.Bounds.Width);
+    }
+
+    private sealed class MeasureCountingView : TwoPaneView
+    {
+        public int Measures { get; private set; }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            Measures++;
+            return base.MeasureOverride(availableSize);
+        }
     }
 
     [AvaloniaFact]

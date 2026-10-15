@@ -11,6 +11,7 @@ namespace Nova.Avalonia.Foldable;
 public static class Fold
 {
     private static readonly ConditionalWeakTable<TopLevel, Registration> s_registrations = new();
+    private static readonly NullFoldStateProvider s_closedProvider = new();
 
     /// <summary>
     /// Creates the provider for each new top level; return null to keep the platform's default.
@@ -19,8 +20,12 @@ public static class Fold
     public static Func<TopLevel, IFoldStateProvider?>? ProviderFactory { get; set; }
 
     /// <summary>
-    /// Defines the IsEnabled attached property, which tracks the fold of the control's top level.
+    /// Defines the IsEnabled attached property, which starts tracking the fold of the control's top level.
     /// </summary>
+    /// <remarks>
+    /// Tracking is shared by everything on the top level, <see cref="TwoPaneView"/> included, so it lasts until
+    /// the top level closes; setting the property back to false doesn't stop it.
+    /// </remarks>
     public static readonly AttachedProperty<bool> IsEnabledProperty =
         AvaloniaProperty.RegisterAttached<Control, bool>("IsEnabled", typeof(Fold));
 
@@ -49,10 +54,10 @@ public static class Fold
         AvaloniaProperty.RegisterAttached<StyledElement, bool>("IsSeparating", typeof(Fold), inherits: true);
 
     /// <summary>
-    /// Defines the FoldOrientation attached property, read with <see cref="GetFoldOrientation"/>.
+    /// Defines the Orientation attached property, read with <see cref="GetOrientation"/>.
     /// </summary>
-    public static readonly AttachedProperty<FoldOrientation> FoldOrientationProperty =
-        AvaloniaProperty.RegisterAttached<StyledElement, FoldOrientation>("FoldOrientation", typeof(Fold), inherits: true);
+    public static readonly AttachedProperty<FoldOrientation> OrientationProperty =
+        AvaloniaProperty.RegisterAttached<StyledElement, FoldOrientation>("Orientation", typeof(Fold), inherits: true);
 
     /// <summary>
     /// Defines the HingeAngle attached property, read with <see cref="GetHingeAngle"/>.
@@ -66,13 +71,14 @@ public static class Fold
     }
 
     /// <summary>
-    /// Gets whether the fold of the control's top level is tracked.
+    /// Gets whether the control asked to track the fold of its top level.
     /// </summary>
     public static bool GetIsEnabled(Control element) => element.GetValue(IsEnabledProperty);
 
     /// <summary>
-    /// Sets whether the fold of the control's top level is tracked.
+    /// Starts tracking the fold of the control's top level when <paramref name="value"/> is true.
     /// </summary>
+    /// <remarks>Tracking lasts until the top level closes; false doesn't stop it.</remarks>
     public static void SetIsEnabled(Control element, bool value) => element.SetValue(IsEnabledProperty, value);
 
     /// <summary>
@@ -101,7 +107,7 @@ public static class Fold
     /// <summary>
     /// Gets the direction of the fold.
     /// </summary>
-    public static FoldOrientation GetFoldOrientation(StyledElement element) => GetState(element).Orientation;
+    public static FoldOrientation GetOrientation(StyledElement element) => GetState(element).Orientation;
 
     /// <summary>
     /// Gets the hinge angle in degrees, or null when unknown.
@@ -111,10 +117,17 @@ public static class Fold
     /// <summary>
     /// Returns the provider for <paramref name="topLevel"/>, creating it on first use.
     /// </summary>
+    /// <remarks>Once the top level has closed, returns a provider that reports no fold and tracks nothing.</remarks>
     public static IFoldStateProvider GetProvider(TopLevel topLevel)
     {
+        ArgumentNullException.ThrowIfNull(topLevel);
+
         if (s_registrations.TryGetValue(topLevel, out var existing))
             return existing.Provider;
+
+        // A closed top level would never dispose a new provider, or the platform listeners it starts.
+        if (topLevel.PlatformImpl is null)
+            return s_closedProvider;
 
         var provider = ProviderFactory?.Invoke(topLevel) ?? CreatePlatformProvider(topLevel) ?? new NullFoldStateProvider();
         SetProvider(topLevel, provider);
@@ -124,10 +137,20 @@ public static class Fold
     /// <summary>
     /// Sets the provider of <paramref name="topLevel"/>, disposing the old one.
     /// </summary>
-    /// <remarks>The top level owns the provider and disposes it when replaced or closed, so don't share one instance between top levels.</remarks>
+    /// <remarks>
+    /// The top level owns the provider and disposes it when replaced or closed, so don't share one instance between
+    /// top levels. A top level that has already closed disposes it right away.
+    /// </remarks>
     public static void SetProvider(TopLevel topLevel, IFoldStateProvider provider)
     {
+        ArgumentNullException.ThrowIfNull(topLevel);
         ArgumentNullException.ThrowIfNull(provider);
+
+        if (topLevel.PlatformImpl is null)
+        {
+            provider.Dispose();
+            return;
+        }
 
         if (s_registrations.TryGetValue(topLevel, out var existing))
         {
@@ -149,7 +172,7 @@ public static class Fold
         if (!OperatingSystem.IsIOSVersionAtLeast(27, 1))
             return null;
 #pragma warning disable CA1416 // The iOS build never loads on Mac Catalyst, which the analyzer can't tell.
-        return Platforms.iOS.UIKitFoldStateProvider.TryCreate(topLevel);
+        return Platforms.iOS.iOSFoldStateProvider.TryCreate(topLevel);
 #pragma warning restore CA1416
 #elif ANDROID
         return Platforms.Android.AndroidFoldStateProvider.TryCreate(topLevel);
@@ -178,6 +201,10 @@ public static class Fold
     private sealed class Registration : IDisposable
     {
         private readonly TopLevel _topLevel;
+        private FoldState _applied = FoldState.None;
+        private FoldState? _pendingAngle;
+        private bool _throttling;
+        private bool _disposed;
 
         public Registration(TopLevel topLevel, IFoldStateProvider provider)
         {
@@ -193,6 +220,7 @@ public static class Fold
 
         public void Dispose()
         {
+            _disposed = true;
             Provider.Changed -= OnChanged;
             _topLevel.PropertyChanged -= OnTopLevelPropertyChanged;
             _topLevel.Closed -= OnTopLevelClosed;
@@ -207,7 +235,42 @@ public static class Fold
             Dispose();
         }
 
-        private void OnChanged(object? sender, FoldState state) => Apply(state);
+        // The hinge angle can change several times a frame while the device folds, and every change
+        // reaches each control below the top level. Angle-only changes go out at most once a frame: the
+        // first at once, the rest as the latest one on the next frame. Anything else goes out at once.
+        private void OnChanged(object? sender, FoldState state)
+        {
+            if (state with { HingeAngle = _applied.HingeAngle } == _applied)
+            {
+                if (_throttling)
+                {
+                    _pendingAngle = state;
+                    return;
+                }
+                StartThrottle();
+            }
+
+            _pendingAngle = null;
+            Apply(state);
+        }
+
+        private void StartThrottle()
+        {
+            _throttling = true;
+            _topLevel.RequestAnimationFrame(OnFrame);
+        }
+
+        // Stays on while the angle keeps changing, so a steady stream is applied once per frame.
+        private void OnFrame(TimeSpan time)
+        {
+            _throttling = false;
+            if (_disposed || _pendingAngle is not { } state)
+                return;
+
+            _pendingAngle = null;
+            StartThrottle();
+            Apply(state);
+        }
 
         // A density change rescales the fold and arrives after the resize, so it gets its own refresh.
         private void OnScalingChanged(object? sender, EventArgs e) => Provider.Refresh();
@@ -222,11 +285,12 @@ public static class Fold
         // State goes first: the Get accessors read it, so a handler on any of these properties sees the whole snapshot.
         public void Apply(FoldState state)
         {
+            _applied = state;
             _topLevel.SetValue(StateProperty, state);
             _topLevel.SetValue(PostureProperty, state.Posture);
             _topLevel.SetValue(IsFoldableProperty, state.IsFoldable);
             _topLevel.SetValue(IsSeparatingProperty, state.IsSeparating);
-            _topLevel.SetValue(FoldOrientationProperty, state.Orientation);
+            _topLevel.SetValue(OrientationProperty, state.Orientation);
             _topLevel.SetValue(HingeAngleProperty, state.HingeAngle);
         }
     }

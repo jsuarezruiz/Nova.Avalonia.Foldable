@@ -32,6 +32,7 @@ internal sealed class AndroidFoldStateProvider : JavaObject, IConsumer, ISensorE
     private FoldInfo? _fold;
     private double? _hingeAngle;
     private bool _seenFold;
+    private bool _disposed;
 
     private AndroidFoldStateProvider(TopLevel topLevel, AndroidView view, Activity activity)
     {
@@ -204,8 +205,9 @@ internal sealed class AndroidFoldStateProvider : JavaObject, IConsumer, ISensorE
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
+        if (disposing && !_disposed)
         {
+            _disposed = true;
             _tracker.RemoveWindowLayoutInfoListener(this);
             _sensors?.UnregisterListener(this);
             _activity.Application?.UnregisterActivityLifecycleCallbacks(this);

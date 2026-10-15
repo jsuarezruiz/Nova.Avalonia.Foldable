@@ -81,8 +81,11 @@ public class TwoPaneView : Control
         AvaloniaProperty.RegisterDirect<TwoPaneView, TwoPaneViewMode>(nameof(Mode), o => o.Mode);
 
     private readonly List<Visual> _transformSources = [];
+    private readonly PaneHost _host1 = new();
+    private readonly PaneHost _host2 = new();
     private TwoPaneViewMode _mode;
-    private TwoPaneViewMode _arrangedMode;
+    private PaneLayout? _arranged;
+    private Size _arrangedSize;
     private Matrix _fromTopLevel = Matrix.Identity;
     private Matrix? _settlingFromTopLevel;
     private bool _isSettling;
@@ -95,6 +98,15 @@ public class TwoPaneView : Control
             MinWideModeWidthProperty, MinTallModeHeightProperty,
             WideModeConfigurationProperty, TallModeConfigurationProperty,
             SnapToFoldProperty);
+    }
+
+    /// <summary>
+    /// Creates a two-pane view.
+    /// </summary>
+    public TwoPaneView()
+    {
+        VisualChildren.Add(_host1);
+        VisualChildren.Add(_host2);
     }
 
     /// <summary>
@@ -202,9 +214,8 @@ public class TwoPaneView : Control
     }
 
     /// <summary>
-    /// Occurs when <see cref="Mode"/> changes.
+    /// Occurs when <see cref="Mode"/> changes, once the panes are arranged in the new mode.
     /// </summary>
-    /// <remarks>Raised after the panes have been arranged in the new mode, normally when the layout pass ends.</remarks>
     public event EventHandler? ModeChanged;
 
     /// <inheritdoc/>
@@ -216,13 +227,19 @@ public class TwoPaneView : Control
         {
             // Swapping the panes passes each control through both properties; keep one still in use.
             if (change.OldValue is Control oldPane && oldPane != Pane1 && oldPane != Pane2)
-            {
                 LogicalChildren.Remove(oldPane);
-                VisualChildren.Remove(oldPane);
-            }
 
             if (change.NewValue is Control newPane && !LogicalChildren.Contains(newPane))
                 LogicalChildren.Add(newPane);
+
+            // A pane moving to the other host, as when the panes are swapped, leaves its old one first.
+            // The same control in both properties is shown once.
+            if (_host1.Pane != Pane1 && _host2.Pane == Pane1)
+                _host2.Pane = null;
+            if (_host2.Pane != Pane2 && _host1.Pane == Pane2)
+                _host1.Pane = null;
+            _host1.Pane = Pane1;
+            _host2.Pane = Pane2 == Pane1 ? null : Pane2;
 
             InvalidateMeasure();
         }
@@ -273,6 +290,7 @@ public class TwoPaneView : Control
         _isSettling = false;
         _topLevel = null;
         _fromTopLevel = Matrix.Identity;
+        _arranged = null;
     }
 
     private void OnTransformSourcePropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -326,8 +344,8 @@ public class TwoPaneView : Control
     // Mode is published once the fold mapping has settled and the panes are arranged.
     private void OnLayoutUpdated(object? sender, EventArgs e)
     {
-        if (!UpdateFoldMapping() && IsMeasureValid && IsArrangeValid)
-            Mode = _arrangedMode;
+        if (!UpdateFoldMapping() && IsMeasureValid && IsArrangeValid && _arranged is { } arranged)
+            Mode = arranged.Mode;
     }
 
     // The fold is reported in top-level coordinates; track where this view sits (and any scaling)
@@ -341,6 +359,11 @@ public class TwoPaneView : Control
         // Without a fold the position doesn't matter; skip the extra pass while scrolling or animating.
         if (GetValue(Fold.StateProperty).FoldBounds is null)
             return false;
+
+        // Nor does a move that leaves the panes where they are, such as scrolling along the fold or past it.
+        if (_arranged is { } arranged && ComputeLayout(_arrangedSize) == arranged)
+            return false;
+
         InvalidateMeasure();
         return true;
     }
@@ -353,18 +376,18 @@ public class TwoPaneView : Control
             double.IsInfinity(availableSize.Width) ? Bounds.Width : availableSize.Width,
             double.IsInfinity(availableSize.Height) ? Bounds.Height : availableSize.Height);
         var layout = ComputeLayout(layoutSize);
-        UpdateVisualChildren(layout);
+        ShowHosts(layout);
 
         var desired = default(Size);
-        if (layout.Pane1 is { } r1 && Pane1 is { } p1)
+        if (layout.Pane1 is { } r1 && _host1.Pane is not null)
         {
-            p1.Measure(MeasureConstraint(availableSize, r1, layout.Mode));
-            desired = Combine(desired, p1.DesiredSize, layout.Mode);
+            _host1.Measure(MeasureConstraint(availableSize, r1, layout.Mode));
+            desired = Combine(desired, _host1.DesiredSize, layout.Mode);
         }
-        if (layout.Pane2 is { } r2 && Pane2 is { } p2)
+        if (layout.Pane2 is { } r2 && _host2.Pane is not null)
         {
-            p2.Measure(MeasureConstraint(availableSize, r2, layout.Mode));
-            desired = Combine(desired, p2.DesiredSize, layout.Mode);
+            _host2.Measure(MeasureConstraint(availableSize, r2, layout.Mode));
+            desired = Combine(desired, _host2.DesiredSize, layout.Mode);
         }
 
         return new Size(
@@ -376,18 +399,27 @@ public class TwoPaneView : Control
     protected override Size ArrangeOverride(Size finalSize)
     {
         var layout = ComputeLayout(finalSize);
-        UpdateVisualChildren(layout);
+        ShowHosts(layout);
 
+        // The hosts cover the whole view, so the panes' bounds are in the view's coordinates.
+        var bounds = new Rect(finalSize);
         if (layout.Pane1 is { } r1)
-            Pane1?.Arrange(r1);
+        {
+            _host1.PaneRect = r1;
+            _host1.Arrange(bounds);
+        }
         if (layout.Pane2 is { } r2)
-            Pane2?.Arrange(r2);
+        {
+            _host2.PaneRect = r2;
+            _host2.Arrange(bounds);
+        }
 
         // Mode follows the arranged layout only, published when the layout pass ends (see OnLayoutUpdated).
         // Outside a top level there is no fold to map, so it is published right away.
-        _arrangedMode = layout.Mode;
+        _arranged = layout;
+        _arrangedSize = finalSize;
         if (_topLevel is null)
-            Mode = _arrangedMode;
+            Mode = layout.Mode;
 
         return finalSize;
     }
@@ -408,67 +440,126 @@ public class TwoPaneView : Control
         _ => new Size(Math.Max(a.Width, b.Width), Math.Max(a.Height, b.Height)),
     };
 
-    private void UpdateVisualChildren(PaneLayout layout)
+    private void ShowHosts(PaneLayout layout)
     {
-        Sync(Pane1, layout.Pane1 is not null);
-        Sync(Pane2, layout.Pane2 is not null);
-
-        void Sync(Control? pane, bool visible)
-        {
-            if (pane is null)
-                return;
-            var present = VisualChildren.Contains(pane);
-            if (visible && !present)
-                VisualChildren.Add(pane);
-            else if (!visible && present)
-                VisualChildren.Remove(pane);
-        }
+        _host1.IsVisible = layout.Pane1 is not null;
+        _host2.IsVisible = layout.Pane2 is not null;
     }
 
     private readonly record struct PaneLayout(TwoPaneViewMode Mode, Rect? Pane1, Rect? Pane2);
+
+    // Holds a pane in the visual tree for good: a pane that isn't shown is hidden with its host, as WinUI
+    // collapses it, instead of being detached. Detaching and attaching again restarts the pane's controls,
+    // and a TransitioningContentControl attached again can show a page it had faded out.
+    private sealed class PaneHost : Control
+    {
+        private Control? _pane;
+        private Rect _paneRect;
+
+        public Control? Pane
+        {
+            get => _pane;
+            set
+            {
+                if (_pane == value)
+                    return;
+                if (_pane is not null)
+                    VisualChildren.Remove(_pane);
+                _pane = value;
+                if (_pane is not null)
+                    VisualChildren.Add(_pane);
+                InvalidateMeasure();
+            }
+        }
+
+        // Where the pane goes in the view.
+        public Rect PaneRect
+        {
+            get => _paneRect;
+            set
+            {
+                if (_paneRect == value)
+                    return;
+                _paneRect = value;
+                InvalidateArrange();
+            }
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            _pane?.Measure(availableSize);
+            return _pane?.DesiredSize ?? default;
+        }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            _pane?.Arrange(_paneRect);
+            return finalSize;
+        }
+    }
 
     private PaneLayout ComputeLayout(Size size)
     {
         var bounds = new Rect(size);
         var state = GetValue(Fold.StateProperty);
 
+        // A separating fold decides the layout on its own, as spanning two screens does in WinUI: with
+        // SinglePane configured for its direction, one pane is shown rather than the size rules laying
+        // both panes across the fold.
         if (LocalFold(state, size) is { } fold)
         {
             if (state.Orientation == FoldOrientation.Vertical
-                && WideModeConfiguration != TwoPaneViewWideModeConfiguration.SinglePane
                 && (state.IsSeparating || (SnapToFold && size.Width > MinWideModeWidth)))
             {
-                return Wide(
-                    new Rect(0, 0, fold.X, size.Height),
-                    new Rect(fold.Right, 0, Math.Max(0, size.Width - fold.Right), size.Height));
+                if (WideModeConfiguration != TwoPaneViewWideModeConfiguration.SinglePane)
+                {
+                    return Wide(
+                        new Rect(0, 0, fold.X, size.Height),
+                        new Rect(fold.Right, 0, Math.Max(0, size.Width - fold.Right), size.Height));
+                }
+
+                if (state.IsSeparating)
+                    return SinglePane(bounds);
             }
 
             if (state.Orientation == FoldOrientation.Horizontal
-                && TallModeConfiguration != TwoPaneViewTallModeConfiguration.SinglePane
                 && (state.IsSeparating || (SnapToFold && size.Height > MinTallModeHeight)))
             {
-                return Tall(
-                    new Rect(0, 0, size.Width, fold.Y),
-                    new Rect(0, fold.Bottom, size.Width, Math.Max(0, size.Height - fold.Bottom)));
+                if (TallModeConfiguration != TwoPaneViewTallModeConfiguration.SinglePane)
+                {
+                    return Tall(
+                        new Rect(0, 0, size.Width, fold.Y),
+                        new Rect(0, fold.Bottom, size.Width, Math.Max(0, size.Height - fold.Bottom)));
+                }
+
+                if (state.IsSeparating)
+                    return SinglePane(bounds);
             }
         }
 
         if (size.Width > MinWideModeWidth && WideModeConfiguration != TwoPaneViewWideModeConfiguration.SinglePane)
         {
-            var (first, second) = Split(size.Width);
-            return Wide(new Rect(0, 0, first, size.Height), new Rect(first, 0, second, size.Height));
+            var (left, right) = WideModeConfiguration == TwoPaneViewWideModeConfiguration.LeftRight
+                ? Split(size.Width, Pane1Length, Pane2Length)
+                : Split(size.Width, Pane2Length, Pane1Length);
+            return Wide(new Rect(0, 0, left, size.Height), new Rect(left, 0, right, size.Height));
         }
 
         if (size.Height > MinTallModeHeight && TallModeConfiguration != TwoPaneViewTallModeConfiguration.SinglePane)
         {
-            var (first, second) = Split(size.Height);
-            return Tall(new Rect(0, 0, size.Width, first), new Rect(0, first, size.Width, second));
+            var (top, bottom) = TallModeConfiguration == TwoPaneViewTallModeConfiguration.TopBottom
+                ? Split(size.Height, Pane1Length, Pane2Length)
+                : Split(size.Height, Pane2Length, Pane1Length);
+            return Tall(new Rect(0, 0, size.Width, top), new Rect(0, top, size.Width, bottom));
         }
 
-        return PanePriority == TwoPaneViewPriority.Pane1
+        return SinglePane(bounds);
+    }
+
+    private PaneLayout SinglePane(Rect bounds) =>
+        PanePriority == TwoPaneViewPriority.Pane1
             ? new(TwoPaneViewMode.SinglePane, bounds, null)
             : new(TwoPaneViewMode.SinglePane, null, bounds);
-    }
 
     private PaneLayout Wide(Rect left, Rect right) =>
         WideModeConfiguration == TwoPaneViewWideModeConfiguration.LeftRight
@@ -497,27 +588,27 @@ public class TwoPaneView : Control
         };
     }
 
-    // Pixel lengths are honored, star lengths share the rest; Auto counts as 1*.
-    private (double First, double Second) Split(double total)
+    // The lengths of the pane on the left or top and the one after it, as a WinUI grid sizes its columns:
+    // pixel lengths are honored, the first pane's first when they don't fit, and star lengths share the
+    // rest; Auto counts as 1*. Two pixel lengths can leave space empty.
+    private static (double First, double Second) Split(double total, GridLength first, GridLength second)
     {
-        var l1 = Pane1Length;
-        var l2 = Pane2Length;
+        var firstPixels = first.IsAbsolute ? Math.Min(first.Value, total) : 0;
+        var secondPixels = second.IsAbsolute ? Math.Min(second.Value, total - firstPixels) : 0;
+        if (first.IsAbsolute && second.IsAbsolute)
+            return (firstPixels, secondPixels);
 
-        if (l1.IsAbsolute)
-        {
-            var first = Math.Min(l1.Value, total);
-            return (first, total - first);
-        }
-        if (l2.IsAbsolute)
-        {
-            var second = Math.Min(l2.Value, total);
-            return (total - second, second);
-        }
+        var rest = total - firstPixels - secondPixels;
+        var firstStars = first.IsAbsolute ? 0 : first.IsStar ? first.Value : 1;
+        var secondStars = second.IsAbsolute ? 0 : second.IsStar ? second.Value : 1;
+        var stars = firstStars + secondStars;
 
-        var s1 = l1.IsStar ? l1.Value : 1;
-        var s2 = l2.IsStar ? l2.Value : 1;
-        var sum = s1 + s2;
-        var firstStar = sum <= 0 ? total / 2 : total * s1 / sum;
-        return (firstStar, total - firstStar);
+        // With no star weight to go by, the panes that aren't a pixel length share the rest equally.
+        double Share(GridLength length, double weight) =>
+            length.IsAbsolute ? 0
+            : stars > 0 ? rest * weight / stars
+            : rest / ((first.IsAbsolute ? 0 : 1) + (second.IsAbsolute ? 0 : 1));
+
+        return (firstPixels + Share(first, firstStars), secondPixels + Share(second, secondStars));
     }
 }
