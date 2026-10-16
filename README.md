@@ -26,7 +26,7 @@ The iOS 27.1 APIs aren't in .NET for iOS yet, so this repo carries its own copy 
 
 ## Getting started
 
-There's no NuGet package yet, so reference the project from your shared UI project:
+Reference the project from your shared UI project:
 
 ```xml
 <ProjectReference Include="path/to/src/Nova.Avalonia.Foldable/Nova.Avalonia.Foldable.csproj" />
@@ -123,7 +123,7 @@ dotnet run --project samples/Nova.Avalonia.Foldable.Showcase/Nova.Avalonia.Folda
 - The hinge angle is only reported where the platform exposes it. On Android the device needs a hinge sensor and Android 11 or later.
 - Avalonia 12 pads the content for safe areas, such as the Duo's sensor edge. `TwoPaneView` accounts for it, but keep it in mind when you position things against `FoldBounds` yourself.
 
-Next on the list are NuGet packages, the official iOS bindings, camera housing regions, and real Auto lengths and animated mode changes in `TwoPaneView`.
+Next on the list are switching to the official iOS bindings once .NET for iOS ships them, camera housing regions, and real Auto lengths and animated mode changes in `TwoPaneView`.
 
 ## Contributing and license
 
