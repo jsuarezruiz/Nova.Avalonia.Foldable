@@ -9,7 +9,7 @@ Follow these steps to reference the library, prepare the iOS and Android heads, 
 
 ## Prerequisites
 
-- .NET 10 SDK 10.0.400 or later, with the `ios` and `android` workloads for mobile heads (the `ios` workload must be 27.1 or later)
+- .NET 10 SDK 10.0.402 or later, with the `ios` and `android` workloads for mobile heads (the `ios` workload must be 27.1 or later)
 - Avalonia 12.1.4 or later
 - Xcode 27.1 for iOS work
 
@@ -27,7 +27,7 @@ The library targets `net10.0`, `net10.0-ios27.1` and `net10.0-android`. The shar
 
 ## Prepare the iOS head
 
-Target iOS 27.1, the first version of .NET for iOS with the iPhone Duo APIs. An iOS head with a lower target version can't reference the library:
+Target iOS 27.1, the first version of .NET for iOS with the iPhone Duo APIs. A head with a lower target version still builds, but picks up the library's `net10.0` build, which reports no fold:
 
 ```xml
 <PropertyGroup>

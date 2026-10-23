@@ -12,7 +12,7 @@ Thanks for helping. Bug reports, device reports, docs and code are all welcome.
 
 Requirements:
 
-- .NET 10 SDK with the `ios` and `android` workloads (the iOS workload must be 27.1 or later, which needs .NET SDK 10.0.400 or later)
+- .NET 10 SDK with the `ios` and `android` workloads (the iOS workload must be 27.1 or later: .NET SDK 10.0.402 with workload set 10.0.402.1)
 - Xcode 27.1 for iOS work
 - The Android SDK and an emulator for Android work
 

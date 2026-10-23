@@ -19,9 +19,9 @@ The iOS provider attaches a `UIHingeInteraction` to the Avalonia root view for t
 
 ### Build requirements
 
-The provider uses the `UIKit` bindings for the iOS 27.1 APIs, which first ship in the .NET for iOS 27.1 workload (.NET SDK 10.0.400 or later). That workload needs Xcode 27.1.
+The provider uses the `UIKit` bindings for the iOS 27.1 APIs, which first ship in the .NET for iOS 27.1 workload (.NET SDK 10.0.402 with workload set 10.0.402.1). That workload needs Xcode 27.1.
 
-The library's iOS target is `net10.0-ios27.1`, so an iOS head that references it targets `net10.0-ios27.1` too. Its `SupportedOSPlatformVersion` can stay lower. On iOS versions before 27.1 the new classes are missing, and the provider reports no fold.
+The library's iOS target is `net10.0-ios27.1`, and the iOS head needs 27.1 or later too. With the 27.1 workload a head that targets `net10.0-ios` gets 27.1. A head pinned lower, such as `net10.0-ios26.0`, still builds, but NuGet picks the library's `net10.0` build, which reports no fold. The samples set `net10.0-ios27.1` to make the requirement explicit. `SupportedOSPlatformVersion` can stay lower. On iOS versions before 27.1 the new classes are missing, and the provider reports no fold.
 
 ### The iPhone Duo simulator
 

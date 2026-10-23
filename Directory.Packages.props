@@ -20,7 +20,7 @@
     <PackageVersion Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" Version="2.11.0.1" />
     <PackageVersion Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState.Android" Version="2.11.0.1" />
     <PackageVersion Include="Avalonia.Headless.XUnit" Version="$(AvaloniaVersion)" />
-    <!-- Its native assets set the minimum iOS workload checked in Directory.Build.targets. -->
+    <!-- Its native assets need .NET for iOS 26.2 or later; the iOS heads' net10.0-ios27.1 target covers that. -->
     <PackageVersion Include="SkiaSharp.NativeAssets.iOS" Version="3.119.4" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="xunit.v3" Version="3.2.2" />

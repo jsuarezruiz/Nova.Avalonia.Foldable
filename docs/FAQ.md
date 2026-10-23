@@ -25,13 +25,17 @@ Not yet. Reference the projects for now. Packages are on the roadmap.
 
 ## iOS
 
-### Why does my iOS head need `net10.0-ios27.1`?
+### Why `net10.0-ios27.1`?
 
-The iPhone Duo APIs (`UIHingeInteraction`, `UIHinge`, `-[UIView reservedRegionsOfKind:]`) are new in the iOS 27.1 SDK, and .NET for iOS binds them from the 27.1 workload on. The library's iOS target is `net10.0-ios27.1`, and a head with a lower target version can't reference it. [Build requirements](docs/platforms.md#build-requirements) has the details.
+The iPhone Duo APIs (`UIHingeInteraction`, `UIHinge`, `-[UIView reservedRegionsOfKind:]`) are new in the iOS 27.1 SDK, and .NET for iOS binds them from the 27.1 workload on. The library's iOS target is `net10.0-ios27.1`. A head that targets an earlier version, such as `net10.0-ios26.0`, still builds, but NuGet then picks the library's `net10.0` build and the app never reports a fold. With the 27.1 workload a head that targets plain `net10.0-ios` gets 27.1. [Build requirements](docs/platforms.md#build-requirements) has the details.
 
 ### The iOS build can't find `UIHingeInteraction` or the 27.1 target
 
-The installed .NET for iOS workload is older than 27.1. Run `dotnet workload update` with .NET SDK 10.0.400 or later, and install Xcode 27.1.
+The installed .NET for iOS workload is older than 27.1. Install .NET SDK 10.0.402 or later, run `dotnet workload install ios --version 10.0.402.1`, and install Xcode 27.1.
+
+### I get `duplicate interface definition for class 'UIHinge'`
+
+Your copy of the library predates .NET for iOS 27.1 and still carries its own bindings for the hinge classes. In device and Release builds the static registrar declares those classes again, which clashes with UIKit's 27.1 headers. The simulator uses the dynamic registrar, so it only shows on device. Update the library, which now uses the official bindings.
 
 ### Does the app still run on iOS versions before 27.1?
 
