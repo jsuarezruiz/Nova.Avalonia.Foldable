@@ -27,4 +27,4 @@ You rarely touch providers directly, since `TwoPaneView` and [Fold.IsEnabled](fo
 
 ## Platform APIs
 
-The iPhone Duo APIs are new in iOS 27.1 and .NET for iOS doesn't ship them yet, so the repository carries a temporary copy of the bindings. [Platforms](platforms.md#the-temporary-bindings) explains where they come from and when they go away. Android needs no custom bindings, since it uses Microsoft's `Xamarin.AndroidX.Window` packages.
+The iPhone Duo APIs are new in iOS 27.1 and ship in the .NET for iOS 27.1 workload, so iOS heads target `net10.0-ios27.1`. [Platforms](platforms.md#build-requirements) has the details. Android needs no custom bindings, since it uses Microsoft's `Xamarin.AndroidX.Window` packages.

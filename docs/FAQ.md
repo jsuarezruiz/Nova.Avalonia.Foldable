@@ -25,21 +25,17 @@ Not yet. Reference the projects for now. Packages are on the roadmap.
 
 ## iOS
 
-### Why does the repo contain iOS bindings?
+### Why does my iOS head need `net10.0-ios27.1`?
 
-The iPhone Duo APIs (`UIHingeInteraction`, `UIHinge`, `-[UIView reservedRegionsOfKind:]`) are new in the iOS 27.1 SDK, and .NET for iOS doesn't include them yet. [The temporary bindings](docs/platforms.md#the-temporary-bindings) explains where the copy in this repo comes from and what happens when the official ones ship.
+The iPhone Duo APIs (`UIHingeInteraction`, `UIHinge`, `-[UIView reservedRegionsOfKind:]`) are new in the iOS 27.1 SDK, and .NET for iOS binds them from the 27.1 workload on. The library's iOS target is `net10.0-ios27.1`, and a head with a lower target version can't reference it. [Build requirements](docs/platforms.md#build-requirements) has the details.
 
-### Why `ValidateXcodeVersion=false`?
+### The iOS build can't find `UIHingeInteraction` or the 27.1 target
 
-The .NET for iOS workload checks for the Xcode version it was built against, which is older than the Xcode 27.1 the iPhone Duo simulator needs. The bindings are resolved at runtime and don't depend on the Xcode version, and the samples build with Xcode 27.0 and 27.1. The samples turn the check off in `samples/Shared/iOS/iOSApp.props`. Build with `-p:ValidateXcodeVersion=true` to keep it.
-
-### I get `Undefined symbols: _OBJC_CLASS_$_UIHinge` when linking
-
-You're building against an SDK older than 27.1 without the bindings' `buildTransitive` targets. A future NuGet package will apply them automatically. With project references, import `Nova.Avalonia.Foldable.Bindings.iOS.targets` in your iOS head, as [Prepare the iOS head](docs/getting-started.md#prepare-the-ios-head) shows.
+The installed .NET for iOS workload is older than 27.1. Run `dotnet workload update` with .NET SDK 10.0.400 or later, and install Xcode 27.1.
 
 ### Does the app still run on iOS versions before 27.1?
 
-Yes. The new classes are resolved at runtime, and on older iOS the provider reports no fold.
+Yes. The provider checks for the new classes at runtime, and on older iOS it reports no fold.
 
 ### The fold is 40pt wide. Is that right?
 

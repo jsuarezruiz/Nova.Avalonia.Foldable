@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>net10.0</TargetFrameworks>
     <!-- DesktopOnly=true skips the mobile targets, for machines without the iOS and Android workloads (Linux CI, docs). -->
-    <TargetFrameworks Condition="'$(DesktopOnly)' != 'true'">$(TargetFrameworks);net10.0-ios;net10.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DesktopOnly)' != 'true'">$(TargetFrameworks);net10.0-ios27.1;net10.0-android</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <IsAotCompatible>true</IsAotCompatible>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -20,10 +20,6 @@
   <!-- Its own README: nuget.org renders Markdown only, with absolute links and images from a few hosts. -->
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'ios'">
-    <ProjectReference Include="..\Nova.Avalonia.Foldable.Bindings.iOS\Nova.Avalonia.Foldable.Bindings.iOS.csproj" />
   </ItemGroup>
 
   <!-- Jetpack WindowManager: FoldingFeature and the Java-friendly callback adapter. -->
