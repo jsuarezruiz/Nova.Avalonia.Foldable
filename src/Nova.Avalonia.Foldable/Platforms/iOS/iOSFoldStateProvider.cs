@@ -4,7 +4,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using CoreGraphics;
-using Nova.Avalonia.Foldable.Bindings.iOS;
 using ObjCRuntime;
 using UIKit;
 

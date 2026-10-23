@@ -9,9 +9,9 @@ Follow these steps to reference the library, prepare the iOS and Android heads, 
 
 ## Prerequisites
 
-- .NET 10 SDK with the `ios` and `android` workloads for mobile heads
+- .NET 10 SDK 10.0.402 or later, with the `ios` and `android` workloads for mobile heads (the `ios` workload must be 27.1 or later)
 - Avalonia 12.1.4 or later
-- Xcode for iOS work (Xcode 27.1 for the iPhone Duo simulator)
+- Xcode 27.1 for iOS work
 
 ## Reference the library
 
@@ -23,20 +23,19 @@ There's no NuGet package yet, so reference the project from your shared UI proje
 </ItemGroup>
 ```
 
-The library targets `net10.0`, `net10.0-ios` and `net10.0-android`. The shared project references it once, and each head picks up its platform's provider.
+The library targets `net10.0`, `net10.0-ios27.1` and `net10.0-android`. The shared project references it once, and each head picks up its platform's provider.
 
 ## Prepare the iOS head
 
-Turn off the Xcode version check, since the .NET for iOS workload expects an older Xcode than the 27.1 the iPhone Duo simulator needs, and import the bindings' link settings:
+Target iOS 27.1, the first version of .NET for iOS with the iPhone Duo APIs. A head with a lower target version still builds, but picks up the library's `net10.0` build, which reports no fold:
 
 ```xml
 <PropertyGroup>
-  <ValidateXcodeVersion>false</ValidateXcodeVersion>
+  <TargetFramework>net10.0-ios27.1</TargetFramework>
 </PropertyGroup>
-<Import Project="path/to/src/Nova.Avalonia.Foldable.Bindings.iOS/buildTransitive/Nova.Avalonia.Foldable.Bindings.iOS.targets" />
 ```
 
-The import drops the link-time references to the iOS 27.1 classes. Without it, linking against an older SDK fails with `Undefined symbols: _OBJC_CLASS_$_UIHinge`. The NuGet package will apply it automatically.
+Keep `SupportedOSPlatformVersion` as it is. On iOS versions before 27.1 the app still runs and reports no fold.
 
 ## Prepare the Android head
 

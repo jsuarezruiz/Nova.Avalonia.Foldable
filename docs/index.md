@@ -21,9 +21,9 @@ The fold is read on the iPhone Duo and on Android foldables. Everywhere else the
 
 ## Requirements
 
-- .NET 10
+- .NET 10 SDK 10.0.402 or later, with the .NET for iOS 27.1 workload and Xcode 27.1 for iOS
 - Avalonia 12.1.4 or later
-- For the iPhone Duo simulator, Xcode 27.1 with the iOS 27.1 simulator runtime
+- For the iPhone Duo simulator, the iOS 27.1 simulator runtime
 
 ## Next steps
 

@@ -17,14 +17,16 @@ The iOS provider attaches a `UIHingeInteraction` to the Avalonia root view for t
 - **Occlusion** regions are ignored, since they also report the camera housing on every iPhone.
 - On iOS versions before 27.1 the app runs normally and reports no fold.
 
-### The temporary bindings
+### Build requirements
 
-The iOS 27.1 APIs come from `Nova.Avalonia.Foldable.Bindings.iOS`, a copy of the definitions in [dotnet/macios#26705](https://github.com/dotnet/macios/pull/26705). That PR is merged into the `xcode27.1` branch of dotnet/macios, but it isn't in a released .NET for iOS workload yet. The bindings' `buildTransitive` targets drop the link-time references to the new Objective-C classes, so apps link against older SDKs and resolve the classes at runtime. Type and member names match the PR, so once .NET for iOS ships them, the bindings project is deleted and the library switches to the official `UIKit` types, with no change for apps.
+The provider uses the `UIKit` bindings for the iOS 27.1 APIs, which first ship in the .NET for iOS 27.1 workload (.NET SDK 10.0.402 with workload set 10.0.402.1). That workload needs Xcode 27.1.
+
+The library's iOS target is `net10.0-ios27.1`, and the iOS head needs 27.1 or later too. With the 27.1 workload a head that targets `net10.0-ios` gets 27.1. A head pinned lower, such as `net10.0-ios26.0`, still builds, but NuGet picks the library's `net10.0` build, which reports no fold. The samples set `net10.0-ios27.1` to make the requirement explicit. `SupportedOSPlatformVersion` can stay lower. On iOS versions before 27.1 the new classes are missing, and the provider reports no fold.
 
 ### The iPhone Duo simulator
 
 1. Install **Xcode 27.1** with the **iOS 27.1** simulator runtime. The iOS 27.2 beta 1 runtime lists the iPhone Duo (`iPhone19,4`) as unsupported.
-2. Build an iOS head against the Xcode 27.1 SDK, setting `MD_APPLE_SDK_ROOT` if another Xcode is selected. The samples also build with Xcode 27.0, but the app then runs inset on the Duo instead of filling the display.
+2. Build an iOS head against the Xcode 27.1 SDK, setting `MD_APPLE_SDK_ROOT` if another Xcode is selected.
 3. Run it on the **iPhone Duo** simulator, and change postures with the buttons at the bottom of **Device Hub**, which replaces the Simulator app in Xcode 27.
 
 ## Android

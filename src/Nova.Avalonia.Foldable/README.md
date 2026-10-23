@@ -14,11 +14,11 @@ On devices without a fold nothing changes. The library reports no fold and `TwoP
 | Android 6.0+ (API 23) | Jetpack WindowManager and the hinge angle sensor | Pixel Fold emulator |
 | Desktop, browser | None, reports no fold | |
 
-On iOS the package brings `Nova.Avalonia.Foldable.Bindings.iOS`, a temporary copy of the iOS 27.1 bindings until .NET for iOS ships them. [Platforms](https://jsuarezruiz.github.io/Nova.Avalonia.Foldable/docs/platforms.html#the-temporary-bindings) explains why. On iOS versions before 27.1 the app still runs and reports no fold.
+On iOS the package needs the .NET for iOS 27.1 workload and Xcode 27.1, and the iOS head targets `net10.0-ios27.1`. [Platforms](https://jsuarezruiz.github.io/Nova.Avalonia.Foldable/docs/platforms.html#build-requirements) explains why. On iOS versions before 27.1 the app still runs and reports no fold.
 
 ## Getting started
 
-The Android head should handle configuration changes, so the activity isn't recreated when the device folds. An iOS head built with Xcode 27.1, which the iPhone Duo simulator needs, also turns off the .NET for iOS workload's Xcode version check. [Getting started](https://jsuarezruiz.github.io/Nova.Avalonia.Foldable/docs/getting-started.html) shows both.
+The Android head should handle configuration changes, so the activity isn't recreated when the device folds. The iOS head targets `net10.0-ios27.1`. [Getting started](https://jsuarezruiz.github.io/Nova.Avalonia.Foldable/docs/getting-started.html) shows both.
 
 ## Two panes around the fold
 

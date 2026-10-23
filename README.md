@@ -22,7 +22,7 @@ The [documentation site](https://jsuarezruiz.github.io/Nova.Avalonia.Foldable/) 
 | Android 6.0+ (API 23) | Jetpack WindowManager and the hinge angle sensor | Pixel Fold emulator |
 | Desktop, browser | None, reports no fold | |
 
-The iOS 27.1 APIs aren't in .NET for iOS yet, so this repo carries its own copy of the bindings in [`Nova.Avalonia.Foldable.Bindings.iOS`](src/Nova.Avalonia.Foldable.Bindings.iOS). [Platforms](docs/docs/platforms.md#the-temporary-bindings) explains where they come from and when they go away. On iOS versions before 27.1 the app still runs and reports no fold. Android uses Microsoft's `Xamarin.AndroidX.Window` packages, so it needs no custom bindings.
+The iOS 27.1 APIs ship in the .NET for iOS 27.1 workload, so iOS heads need that workload and Xcode 27.1, and target `net10.0-ios27.1`. [Platforms](docs/docs/platforms.md#build-requirements) has the details. On iOS versions before 27.1 the app still runs and reports no fold. Android uses Microsoft's `Xamarin.AndroidX.Window` packages, so it needs no custom bindings.
 
 ## Getting started
 
@@ -119,11 +119,10 @@ dotnet run --project samples/Nova.Avalonia.Foldable.Showcase/Nova.Avalonia.Folda
 
 ## Limitations
 
-- The iOS bindings are temporary, as [Platforms](docs/docs/platforms.md#the-temporary-bindings) explains.
 - The hinge angle is only reported where the platform exposes it. On Android the device needs a hinge sensor and Android 11 or later.
 - Avalonia 12 pads the content for safe areas, such as the Duo's sensor edge. `TwoPaneView` accounts for it, but keep it in mind when you position things against `FoldBounds` yourself.
 
-Next on the list are switching to the official iOS bindings once .NET for iOS ships them, camera housing regions, and real Auto lengths and animated mode changes in `TwoPaneView`.
+Next on the list are camera housing regions, and real Auto lengths and animated mode changes in `TwoPaneView`.
 
 ## Contributing and license
 

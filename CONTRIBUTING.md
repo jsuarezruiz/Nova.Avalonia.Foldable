@@ -12,8 +12,8 @@ Thanks for helping. Bug reports, device reports, docs and code are all welcome.
 
 Requirements:
 
-- .NET 10 SDK with the `ios` and `android` workloads (the iOS workload must be 26.2 or later)
-- Xcode for iOS work (Xcode 27.1 for the iPhone Duo simulator)
+- .NET 10 SDK with the `ios` and `android` workloads (the iOS workload must be 27.1 or later: .NET SDK 10.0.402 with workload set 10.0.402.1)
+- Xcode 27.1 for iOS work
 - The Android SDK and an emulator for Android work
 
 ```bash
@@ -53,7 +53,6 @@ dotnet docfx docs/docfx.json --serve
 | The `IFoldStateProvider` interface, the no-fold fallback and the simulated fold for tests | `src/Nova.Avalonia.Foldable/Providers` |
 | iOS implementation | `src/Nova.Avalonia.Foldable/Platforms/iOS` |
 | Android implementation | `src/Nova.Avalonia.Foldable/Platforms/Android` |
-| iOS 27.1 bindings (mirror dotnet/macios#26705) | `src/Nova.Avalonia.Foldable.Bindings.iOS` |
 | Tests | `tests/Nova.Avalonia.Foldable.Tests` |
 | Settings, icons and launch screens the sample apps share | `samples/Shared` |
 | Documentation site (DocFX) and FAQ | `docs` |
@@ -66,7 +65,6 @@ Folders are for navigation only. Every public type stays in the `Nova.Avalonia.F
 - Providers raise `Changed` on the UI thread.
 - No fold is not an error. Return `FoldState.None` (or a state with `IsFoldable = false`) instead of throwing, so apps run unchanged on every device.
 - The hinge angle is for effects. Don't make layout depend on it, since not every device exposes it.
-- Keep the iOS bindings identical to dotnet/macios#26705, so switching to the official ones stays a namespace change, and don't add convenience members there.
 - On Android, objects coming through generic callbacks or interface-typed lists need `JavaCast<T>()` or `Class.IsInstance`, not C# type tests.
 
 ## Pull requests
