@@ -105,9 +105,14 @@ The Pixel Fold has two displays, so pass one. `adb shell dumpsys SurfaceFlinger 
 
 In single-pane mode the pane that isn't shown is hidden, as WinUI collapses it. It stays in the visual tree with its state and comes back as it was when the device unfolds. Use `PanePriority` to choose which one is shown.
 
-### A `TransitioningContentControl` shows nothing after it comes back
+### A `TransitioningContentControl` shows nothing after a page change
 
-That's an Avalonia issue in 12.1.2 to 12.1.4. After a `CrossFade`, a `TransitioningContentControl` that is removed from the visual tree and added back can show its content in the presenter it faded out, which is still transparent. `TwoPaneView` only hides a pane, so its panes aren't affected. If your app removes such a control itself, hide it with `IsVisible` instead, or use a transition that doesn't leave the faded-out page transparent.
+That's an Avalonia issue. After a `CrossFade`, the presenter it faded out stays transparent, and a later change can show the new page in it:
+
+- A change with no transition (`PageTransition = null`), from Avalonia 12.0 on. Apps that skip the cross-fade while a pane is hidden hit this.
+- A `TransitioningContentControl` removed from the visual tree and added back, in 12.1.2 to 12.1.4.
+
+`TwoPaneView` only hides a pane, so it doesn't cause either one by itself. To swap a page without a visible transition, use `new CrossFade(TimeSpan.Zero)` instead of `null`, as the Showcase does. To take such a control off screen, hide it with `IsVisible` instead of removing it.
 
 ### Can I use the hinge angle for layout?
 

@@ -38,6 +38,10 @@ public partial class MainView : UserControl
     private static readonly TimeSpan ContentDelay = FlightDuration + TimeSpan.FromMilliseconds(1000);
     private static readonly TimeSpan FirstReveal = TimeSpan.FromMilliseconds(1600);
 
+    // Swaps the page at once. Not a null transition: since Avalonia 12.0 a cross-fade leaves the
+    // presenter it faded out transparent, and a page swapped in without a transition can land there.
+    private static readonly IPageTransition InstantSwap = new CrossFade(TimeSpan.Zero);
+
     private readonly AnimationController _starFlight;
     private readonly AnimationController _cardFlight;
     private readonly AnimationController _paneFade;
@@ -218,7 +222,7 @@ public partial class MainView : UserControl
         detail.ReturnRequested += (_, _) => ReturnToList(detail);
 
         // A page that arrives while its pane is hidden isn't cross-faded; ShowPane fades the pane in instead.
-        DetailHost.PageTransition = DetailHost.IsEffectivelyVisible ? _detailTransition : null;
+        DetailHost.PageTransition = DetailHost.IsEffectivelyVisible ? _detailTransition : InstantSwap;
 
         _detail?.Retire();
         _detail = detail;
