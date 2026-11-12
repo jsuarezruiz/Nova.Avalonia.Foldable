@@ -40,8 +40,9 @@ jobs:
         with:
           global-json-file: global.json
 
+      # Workload set 10.0.402.1 has the iOS 27.1 workload; later sets drop the net10.0-ios27.1 target.
       - name: Install workloads
-        run: dotnet workload install ios android
+        run: dotnet workload install ios android --version 10.0.402.1
 
       - name: Build library
         run: dotnet build src/Nova.Avalonia.Foldable --configuration Release

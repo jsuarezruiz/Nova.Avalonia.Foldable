@@ -6,7 +6,7 @@ on:
       - "v*.*.*"
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: release-${{ github.ref }}
@@ -45,6 +45,11 @@ jobs:
     # The library targets net10.0-ios27.1 and net10.0-android, so packing needs macOS with both workloads.
     runs-on: macos-latest
     timeout-minutes: 45
+    permissions:
+      # Creates and publishes the GitHub Release.
+      contents: write
+      # Lets NuGet/login exchange GitHub's OIDC token for a short-lived nuget.org key (Trusted Publishing).
+      id-token: write
 
     steps:
       - name: Checkout
@@ -57,7 +62,7 @@ jobs:
         shell: bash
         run: |
           if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$ ]]; then
-            echo "Release tags must use the vMAJOR.MINOR.PATCH or vMAJOR.MINOR.PATCH-PRERELEASE format, for example v1.0.0 or v0.1.0-preview.1." >&2
+            echo "Release tags must use the vMAJOR.MINOR.PATCH or vMAJOR.MINOR.PATCH-PRERELEASE format, for example v1.0.0 or v1.1.0-preview.1." >&2
             exit 1
           fi
 
@@ -80,8 +85,9 @@ jobs:
         with:
           global-json-file: global.json
 
+      # Workload set 10.0.402.1 has the iOS 27.1 workload; later sets drop the net10.0-ios27.1 target.
       - name: Install workloads
-        run: dotnet workload install ios android
+        run: dotnet workload install ios android --version 10.0.402.1
 
       - name: Build samples
         run: |
@@ -127,12 +133,20 @@ jobs:
               --title "Nova Avalonia Foldable $GITHUB_REF_NAME"
           fi
 
+      # Trusted Publishing: nuget.org's policy for this repository and release.yml issues a key that lasts one hour,
+      # so it's requested right before the push.
+      - name: Log in to NuGet.org
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: jsuarezruiz
+
       - name: Publish packages to NuGet.org
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         run: |
           if [[ -z "$NUGET_API_KEY" ]]; then
-            echo "The NUGET_API_KEY repository secret is not configured." >&2
+            echo "NuGet login returned no API key. Check the Trusted Publishing policy on nuget.org." >&2
             exit 1
           fi
 
