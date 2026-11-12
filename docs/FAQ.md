@@ -17,11 +17,11 @@ No. You write against `Fold`, `FoldState` and `TwoPaneView` in your shared proje
 
 ### Does it work with the Avalonia previewer and on desktop?
 
-Yes. There's no fold there, so you get the size-based layout. To design fold-aware layouts, set a `SimulatedFoldStateProvider` with `Fold.SetProvider(...)`. The Showcase's desktop head includes a simulator panel that does exactly that.
+Yes. There's no fold there, so you get the size-based layout. To design fold-aware layouts, set a `SimulatedFoldStateProvider` with `Fold.SetProvider(...)`. The `Nova.Avalonia.Foldable.Simulator` package does exactly that in a desktop window that draws the iPhone Duo, and the Showcase's desktop head uses it.
 
 ### Is it on NuGet?
 
-Not yet. Reference the projects for now. Packages are on the roadmap.
+Yes. `Nova.Avalonia.Foldable` is the library, and `Nova.Avalonia.Foldable.Simulator` is the desktop simulator window. [Getting started](docs/getting-started.md#add-the-package) shows how to add them.
 
 ## iOS
 

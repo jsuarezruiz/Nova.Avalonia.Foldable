@@ -58,7 +58,13 @@ public void Half_Open_Splits_At_The_Fold()
 
 ## The desktop simulator
 
-`Nova.Avalonia.Foldable.Simulator` runs the app inside a simulated iPhone Duo in a desktop window, with a simulated provider behind it. Show your root view in it from the desktop head:
+`Nova.Avalonia.Foldable.Simulator` runs the app inside a simulated iPhone Duo in a desktop window, with a simulated provider behind it. Add the package to the desktop head:
+
+```bash
+dotnet add package Nova.Avalonia.Foldable.Simulator
+```
+
+Then show your root view in it:
 
 ```csharp
 desktop.MainWindow = new FoldableSimulatorWindow(new MainView(), "My app");

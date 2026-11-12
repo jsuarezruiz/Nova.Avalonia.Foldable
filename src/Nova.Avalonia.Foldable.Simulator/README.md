@@ -6,7 +6,13 @@ A desktop window that runs your [Nova.Avalonia.Foldable](https://www.nuget.org/p
 
 ## Usage
 
-Show your root view in a `FoldableSimulatorWindow` from the desktop head:
+Add the package to the desktop head:
+
+```bash
+dotnet add package Nova.Avalonia.Foldable.Simulator
+```
+
+Then show your root view in a `FoldableSimulatorWindow`:
 
 ```csharp
 public override void OnFrameworkInitializationCompleted()
@@ -30,4 +36,15 @@ The window gives the app a `SimulatedFoldStateProvider`, so `Fold` and `TwoPaneV
 - **A hinge slider and keys:** 1 to 6 pick a posture, the arrows move the hinge by 5°, or 1° with Shift.
 - **A readout** of the `FoldState` the app receives.
 
-While the device is folded, the turned half shows the app but doesn't take clicks. Safe-area insets aren't simulated. Check the final result on the iPhone Duo simulator or an Android foldable emulator.
+While the device is folded, the turned half shows the app but doesn't take clicks. Safe-area insets aren't simulated. Check the final result on the [iPhone Duo simulator](https://jsuarezruiz.github.io/Nova.Avalonia.Foldable/docs/platforms.html#the-iphone-duo-simulator) or the [Pixel Fold emulator](https://jsuarezruiz.github.io/Nova.Avalonia.Foldable/docs/platforms.html#the-pixel-fold-emulator).
+
+## Documentation
+
+- [Testing without a device](https://jsuarezruiz.github.io/Nova.Avalonia.Foldable/docs/testing.html#the-desktop-simulator), with the simulator and headless tests
+- [API reference](https://jsuarezruiz.github.io/Nova.Avalonia.Foldable/api/Nova.Avalonia.Foldable.Simulator.html)
+- [Nova.Avalonia.Foldable](https://www.nuget.org/packages/Nova.Avalonia.Foldable), the library it simulates
+- [Source and samples](https://github.com/jsuarezruiz/Nova.Avalonia.Foldable)
+
+## Feedback
+
+Bug reports are welcome in the [issues](https://github.com/jsuarezruiz/Nova.Avalonia.Foldable/issues). MIT licensed.

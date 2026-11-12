@@ -4,6 +4,8 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>Nova.Avalonia.Foldable.Simulator</RootNamespace>
+    <Title>Nova Avalonia Foldable Simulator</Title>
+    <PackageTags>avalonia;avaloniaui;foldable;simulator;desktop;iphone-duo;hinge;dual-screen</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <Description>A desktop window that simulates the iPhone Duo for Nova.Avalonia.Foldable apps: postures, a hinge you can drag, and the device folding in 3D.</Description>

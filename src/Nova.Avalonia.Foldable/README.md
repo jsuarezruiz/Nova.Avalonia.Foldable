@@ -50,7 +50,7 @@ Set `Fold.IsEnabled` near the root. Every control below it then inherits the fol
 </UserControl>
 ```
 
-A `SimulatedFoldStateProvider` lets you design and test fold layouts on desktop, in the previewer and in headless tests.
+A `SimulatedFoldStateProvider` lets you design and test fold layouts on desktop, in the previewer and in headless tests. [Nova.Avalonia.Foldable.Simulator](https://www.nuget.org/packages/Nova.Avalonia.Foldable.Simulator) wraps it in a desktop window that draws the iPhone Duo folding in 3D.
 
 ## Documentation
 

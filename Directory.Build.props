@@ -3,16 +3,29 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>
-    <Authors>Javier Suárez</Authors>
+    <Authors>Javier Suárez Ruiz</Authors>
+    <Company>Javier Suárez Ruiz</Company>
+    <Copyright>Copyright © 2026 Javier Suárez Ruiz</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageTags>avalonia;foldable;iphone-duo;pixel-fold;twopaneview;hinge;dual-screen</PackageTags>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageIcon>package-icon.png</PackageIcon>
+    <PackageTags>avalonia;avaloniaui;foldable;iphone-duo;pixel-fold;twopaneview;hinge;dual-screen</PackageTags>
     <VersionPrefix>0.1.0</VersionPrefix>
     <PackageProjectUrl>https://jsuarezruiz.github.io/Nova.Avalonia.Foldable/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/jsuarezruiz/Nova.Avalonia.Foldable</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
+
+  <!-- Items see the final IsPackable, so the samples and tests, which set it to false, skip these. -->
+  <ItemGroup Condition="'$(IsPackable)' != 'false'">
+    <None Include="$(MSBuildThisFileDirectory)images/package-icon.png" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
 </Project>

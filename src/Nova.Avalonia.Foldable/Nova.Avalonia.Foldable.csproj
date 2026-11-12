@@ -7,6 +7,7 @@
     <IsAotCompatible>true</IsAotCompatible>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>Nova.Avalonia.Foldable</RootNamespace>
+    <Title>Nova Avalonia Foldable</Title>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">23</SupportedOSPlatformVersion>

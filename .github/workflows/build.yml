@@ -46,6 +46,18 @@ jobs:
       - name: Build library
         run: dotnet build src/Nova.Avalonia.Foldable --configuration Release
 
+      - name: Pack NuGet packages
+        run: ./build/pack-nuget.sh "0.0.0-ci.${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}" artifacts/packages
+
+      - name: Upload NuGet packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: nuget-packages
+          path: |
+            artifacts/packages/*.nupkg
+            artifacts/packages/*.snupkg
+          if-no-files-found: error
+
       - name: Build samples
         run: |
           dotnet build samples/Nova.Avalonia.Foldable.Showcase/Nova.Avalonia.Foldable.Showcase.Desktop --configuration Release

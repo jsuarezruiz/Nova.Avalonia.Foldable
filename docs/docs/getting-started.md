@@ -13,17 +13,17 @@ Follow these steps to reference the library, prepare the iOS and Android heads, 
 - Avalonia 12.1.4 or later
 - Xcode 27.1 for iOS work
 
-## Reference the library
+## Add the package
 
-There's no NuGet package yet, so reference the project from your shared UI project:
+Add `Nova.Avalonia.Foldable` to your shared UI project:
 
-```xml
-<ItemGroup>
-  <ProjectReference Include="path/to/src/Nova.Avalonia.Foldable/Nova.Avalonia.Foldable.csproj" />
-</ItemGroup>
+```bash
+dotnet add package Nova.Avalonia.Foldable
 ```
 
-The library targets `net10.0`, `net10.0-ios27.1` and `net10.0-android`. The shared project references it once, and each head picks up its platform's provider.
+The package targets `net10.0`, `net10.0-ios27.1` and `net10.0-android`. The shared project references it once, and each head picks up its platform's provider.
+
+To design on desktop, add `Nova.Avalonia.Foldable.Simulator` to the desktop head as well. [Testing without a device](testing.md#the-desktop-simulator) shows how to use it.
 
 ## Prepare the iOS head
 

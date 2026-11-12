@@ -42,7 +42,7 @@ dotnet docfx docs/docfx.json --serve
 3. Match the naming, comment density and file layout of the surrounding code. The repository uses `Nullable` everywhere, so keep new code warning-free.
 4. Add or update tests. Layout logic belongs in the headless tests under `tests/`, driven by `SimulatedFoldStateProvider`, so it can be checked without a device.
 5. If you touch a platform provider, run the Sample on that platform and include what it reported in the pull request (a screenshot or the `FOLDDIAG` log lines).
-6. Update the README, the documentation site or the FAQ when behavior changes. The NuGet package has its own README, `src/Nova.Avalonia.Foldable/README.md`, with absolute links, since nuget.org can't follow relative ones.
+6. Update the README, the documentation site or the FAQ when behavior changes. Each NuGet package has its own README, `src/Nova.Avalonia.Foldable/README.md` and `src/Nova.Avalonia.Foldable.Simulator/README.md`, with absolute links, since nuget.org can't follow relative ones.
 
 ### Where things live
 
@@ -53,9 +53,11 @@ dotnet docfx docs/docfx.json --serve
 | The `IFoldStateProvider` interface, the no-fold fallback and the simulated fold for tests | `src/Nova.Avalonia.Foldable/Providers` |
 | iOS implementation | `src/Nova.Avalonia.Foldable/Platforms/iOS` |
 | Android implementation | `src/Nova.Avalonia.Foldable/Platforms/Android` |
+| The desktop simulator window (`FoldableSimulatorWindow`) | `src/Nova.Avalonia.Foldable.Simulator` |
 | Tests | `tests/Nova.Avalonia.Foldable.Tests` |
 | Settings, icons and launch screens the sample apps share | `samples/Shared` |
 | Documentation site (DocFX) and FAQ | `docs` |
+| Packing and releasing ([RELEASING.md](RELEASING.md)) | `build/pack-nuget.sh`, `.github/workflows/release.yml` |
 
 Folders are for navigation only. Every public type stays in the `Nova.Avalonia.Foldable` namespace, so apps need one `using` and one XAML `xmlns`.
 

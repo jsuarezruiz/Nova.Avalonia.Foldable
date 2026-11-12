@@ -26,10 +26,10 @@ The iOS 27.1 APIs ship in the .NET for iOS 27.1 workload, so iOS heads need that
 
 ## Getting started
 
-Reference the project from your shared UI project:
+Add the package to your shared UI project:
 
-```xml
-<ProjectReference Include="path/to/src/Nova.Avalonia.Foldable/Nova.Avalonia.Foldable.csproj" />
+```bash
+dotnet add package Nova.Avalonia.Foldable
 ```
 
 The iOS and Android heads each need one small change before the fold is reported. [Getting started](docs/docs/getting-started.md) walks through both.
@@ -100,7 +100,11 @@ fold.Current = new FoldState(
     IsSeparating: true);
 ```
 
-`Nova.Avalonia.Foldable.Simulator` wraps it in a desktop window that draws the iPhone Duo folding in 3D, with animated postures and a hinge you can drag:
+The `Nova.Avalonia.Foldable.Simulator` package wraps it in a desktop window that draws the iPhone Duo folding in 3D, with animated postures and a hinge you can drag. Add it to the desktop head and show your root view in it:
+
+```bash
+dotnet add package Nova.Avalonia.Foldable.Simulator
+```
 
 ```csharp
 desktop.MainWindow = new FoldableSimulatorWindow(new MainView(), "My app");
