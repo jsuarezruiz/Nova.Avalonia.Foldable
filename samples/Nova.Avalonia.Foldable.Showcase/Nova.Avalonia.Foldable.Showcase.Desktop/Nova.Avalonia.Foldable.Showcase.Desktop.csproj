@@ -16,5 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Nova.Avalonia.Foldable.Showcase\Nova.Avalonia.Foldable.Showcase.csproj" />
+    <ProjectReference Include="..\..\..\src\Nova.Avalonia.Foldable.Simulator\Nova.Avalonia.Foldable.Simulator.csproj" />
   </ItemGroup>
 </Project>

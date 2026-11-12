@@ -6,7 +6,8 @@
         {
           "src": "../src",
           "files": [
-            "Nova.Avalonia.Foldable/Nova.Avalonia.Foldable.csproj"
+            "Nova.Avalonia.Foldable/Nova.Avalonia.Foldable.csproj",
+            "Nova.Avalonia.Foldable.Simulator/Nova.Avalonia.Foldable.Simulator.csproj"
           ]
         }
       ],

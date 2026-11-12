@@ -100,9 +100,13 @@ fold.Current = new FoldState(
     IsSeparating: true);
 ```
 
-The Showcase's desktop app wraps it in a simulator panel:
+`Nova.Avalonia.Foldable.Simulator` wraps it in a desktop window that draws the iPhone Duo folding in 3D, with animated postures and a hinge you can drag:
 
-<p align="center"><img src="images/desktop-simulator.png" width="720" alt="Showcase with the desktop foldable simulator" /></p>
+```csharp
+desktop.MainWindow = new FoldableSimulatorWindow(new MainView(), "My app");
+```
+
+<p align="center"><img src="images/desktop-simulator.png" width="720" alt="The Showcase in the foldable simulator, half open in book posture" /></p>
 
 ## Samples
 

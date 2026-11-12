@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Nova.Avalonia.Foldable/Nova.Avalonia.Foldable.csproj" />
+    <Project Path="src/Nova.Avalonia.Foldable.Simulator/Nova.Avalonia.Foldable.Simulator.csproj" />
   </Folder>
   <Folder Name="/samples/">
     <Project Path="samples/Nova.Avalonia.Foldable.Sample/Nova.Avalonia.Foldable.Sample/Nova.Avalonia.Foldable.Sample.csproj" />
